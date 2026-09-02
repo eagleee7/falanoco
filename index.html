@@ -486,6 +486,30 @@
     text-decoration:underline;
   }
   .footer-bottom a:hover{opacity:.7;}
+
+  /* ---------- CONCEPT DISCLAIMER ---------- */
+  .concept-disclaimer{
+    background:var(--black-deep);
+    border-top:1px solid var(--line-soft);
+    border-bottom:1px solid var(--line-soft);
+    padding:18px 40px;
+    text-align:center;
+  }
+  .concept-disclaimer p{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:#7a7a7a;
+  }
+  .concept-disclaimer-link{
+    color:var(--white);
+    font-weight:600;
+    text-decoration:underline;
+    text-underline-offset:3px;
+    transition:opacity .2s ease;
+  }
+  .concept-disclaimer-link:hover{opacity:.7;}
   @media (max-width:800px){
     .footer-top{grid-template-columns:1fr 1fr;}
   }
@@ -1146,6 +1170,10 @@
       <span class="visit-section-plus">+</span>
     </div>
   </section>
+
+  <div class="concept-disclaimer">
+    <p>Concept site — not affiliated with Falanoco. Built by <a href="https://eagle7.vercel.app" target="_blank" rel="noopener" class="concept-disclaimer-link">Eagle</a> as a design proposal.</p>
+  </div>
 
   <footer>
     <div class="wrap">
