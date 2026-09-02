@@ -1,0 +1,2177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Timber & Structural Engineering Solver</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" onerror="window.__pdfjsFailed=true;"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" onerror="window.__html2pdfFailed=true;"></script>
+<style>
+/* ============================= TOKENS ============================= */
+:root{
+  --navy-950:#071427;
+  --navy-900:#0a1c33;
+  --navy-800:#0f2846;
+  --navy-700:#153560;
+  --navy-600:#1c4478;
+  --cyan-600:#0891b2;
+  --cyan-500:#0ea5b7;
+  --cyan-400:#22c3d6;
+  --cyan-100:#e3f8fb;
+  --bg:#f4f7fa;
+  --card:#ffffff;
+  --border:#e2e8f0;
+  --border-strong:#cbd5e1;
+  --text-900:#0f1b2d;
+  --text-700:#33415a;
+  --text-500:#647188;
+  --text-400:#93a0b3;
+  --success-bg:#eafaf3; --success-fg:#0d7a53; --success-bd:#a9e8cd;
+  --danger-bg:#fdeeee; --danger-fg:#b3261e; --danger-bd:#f3bcb8;
+  --warning-bg:#fff7e6; --warning-fg:#95610a; --warning-bd:#f6d999;
+  --radius-lg:16px;
+  --radius-md:12px;
+  --radius-sm:8px;
+  --shadow-sm:0 1px 2px rgba(15,27,45,.06);
+  --shadow-md:0 4px 14px rgba(15,27,45,.08);
+  --shadow-lg:0 12px 32px rgba(15,27,45,.14);
+  --font-display:'Space Grotesk',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --header-h:68px;
+  --sidebar-w:264px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:var(--font-body);
+  background:
+    radial-gradient(1200px 500px at 100% -10%, #eaf7fa 0%, transparent 55%),
+    var(--bg);
+  color:var(--text-900);
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+h1,h2,h3,h4{font-family:var(--font-display);margin:0;letter-spacing:-.01em;}
+p{margin:0;}
+button{font-family:var(--font-body);cursor:pointer;}
+input,select,textarea{font-family:var(--font-body);}
+:focus-visible{outline:2px solid var(--cyan-500);outline-offset:2px;}
+a{color:inherit;}
+::selection{background:var(--cyan-100);}
+
+.mono{font-family:var(--font-mono);}
+
+/* ===================== PDF/PRINT EXPORT (in-page, no iframe/popup) ===================== */
+#__pdfExportRoot{ display:none; }
+@media print{
+  body.printing-export > *:not(#__pdfExportRoot){ display:none !important; }
+  body.printing-export #__pdfExportRoot{ display:block !important; position:static !important; }
+}
+
+/* ============================= HEADER ============================= */
+.app-header{
+  position:fixed;top:0;left:0;right:0;height:var(--header-h);
+  background:linear-gradient(180deg,var(--navy-900),var(--navy-950));
+  display:flex;align-items:center;gap:16px;
+  padding:0 20px;z-index:200;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.brand{display:flex;align-items:center;gap:12px;min-width:0;}
+.brand-mark{
+  width:38px;height:38px;border-radius:10px;flex:none;
+  background:linear-gradient(135deg,var(--cyan-500),var(--cyan-400));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 1px rgba(255,255,255,.15) inset;
+}
+.brand-mark svg{width:22px;height:22px;}
+.brand-text{min-width:0;}
+.brand-text .title{
+  color:#fff;font-family:var(--font-display);font-weight:700;
+  font-size:15.5px;line-height:1.2;white-space:nowrap;
+}
+.brand-text .subtitle{
+  color:#9fb4d1;font-size:11.5px;line-height:1.3;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.header-mid{
+  margin-left:8px;display:flex;align-items:center;gap:8px;flex:1;min-width:0;
+}
+.sem-pill{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  color:#cfe0f5;font-size:12px;padding:6px 12px;border-radius:999px;
+  white-space:nowrap;
+}
+.sem-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan-400);}
+.header-right{display:flex;align-items:center;gap:10px;margin-left:auto;flex:none;}
+.designer-chip{
+  display:flex;align-items:center;gap:8px;color:#dbe7f7;font-size:12.5px;
+  padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.1);
+}
+.designer-avatar{
+  width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#5b8def,#22c3d6);
+  color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;
+}
+.btn{
+  border:1px solid var(--border);background:#fff;color:var(--text-700);
+  padding:9px 14px;border-radius:10px;font-size:13.5px;font-weight:600;
+  display:inline-flex;align-items:center;gap:7px;transition:.15s ease;
+}
+.btn:hover{border-color:var(--border-strong);background:#f8fafc;}
+.btn-primary{
+  background:linear-gradient(135deg,var(--cyan-600),var(--cyan-500));
+  color:#fff;border-color:transparent;
+  box-shadow:0 2px 8px rgba(8,145,178,.35);
+}
+.btn-primary:hover{filter:brightness(1.06);}
+.btn-ghost-dark{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);
+  color:#eaf2fb;
+}
+.btn-ghost-dark:hover{background:rgba(255,255,255,.12);}
+.btn-danger{background:var(--danger-bg);color:var(--danger-fg);border-color:var(--danger-bd);}
+.btn-sm{padding:6px 10px;font-size:12.5px;border-radius:8px;}
+.btn[disabled]{opacity:.5;cursor:not-allowed;}
+.icon{width:16px;height:16px;flex:none;}
+.icon-sm{width:14px;height:14px;}
+
+.edit-badge{
+  display:none;align-items:center;gap:6px;background:var(--warning-bg);
+  color:var(--warning-fg);border:1px solid var(--warning-bd);
+  padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;
+}
+body.edit-mode .edit-badge{display:inline-flex;}
+body.edit-mode .app-header{box-shadow:0 0 0 2px var(--warning-fg) inset;}
+
+.menu-toggle{display:none;}
+
+/* ============================= SIDEBAR ============================= */
+.sidebar{
+  position:fixed;top:var(--header-h);left:0;bottom:0;width:var(--sidebar-w);
+  background:linear-gradient(180deg,var(--navy-900),var(--navy-950) 85%);
+  overflow-y:auto;padding:18px 12px 24px;z-index:150;
+  border-right:1px solid rgba(255,255,255,.05);
+}
+.nav-group{margin-bottom:18px;}
+.nav-group-label{
+  color:#6f88ab;font-size:10.5px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;padding:0 12px 8px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9.5px 12px;border-radius:10px;
+  color:#c3d3ea;font-size:13.5px;font-weight:500;cursor:pointer;
+  margin-bottom:2px;transition:.12s;border:1px solid transparent;
+  white-space:nowrap;
+}
+.nav-item:hover{background:rgba(255,255,255,.05);color:#fff;}
+.nav-item svg{width:17px;height:17px;flex:none;opacity:.85;}
+.nav-item.active{
+  background:linear-gradient(135deg,rgba(14,165,183,.22),rgba(14,165,183,.08));
+  border-color:rgba(34,195,214,.4);color:#fff;
+}
+.nav-item.active svg{opacity:1;color:var(--cyan-400);}
+.nav-item .count{
+  margin-left:auto;font-size:10.5px;background:rgba(255,255,255,.08);
+  padding:1px 7px;border-radius:999px;color:#9fb4d1;
+}
+
+/* ============================= LAYOUT ============================= */
+.app-main{
+  margin-left:var(--sidebar-w);margin-top:var(--header-h);
+  padding:28px 32px 80px;max-width:1280px;
+}
+.view{display:none;animation:fadeIn .25s ease;}
+.view.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+.view-header{margin-bottom:22px;}
+.eyebrow{
+  font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--cyan-600);margin-bottom:6px;
+}
+.view-title{font-size:26px;font-weight:700;color:var(--text-900);}
+.view-desc{color:var(--text-500);font-size:14px;margin-top:6px;max-width:70ch;line-height:1.55;}
+
+.card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-sm);
+}
+.card-pad{padding:22px;}
+
+/* ============================= HERO ============================= */
+.hero{
+  position:relative;overflow:hidden;border-radius:var(--radius-lg);
+  background:linear-gradient(135deg,var(--navy-900),var(--navy-800) 60%,var(--navy-700));
+  padding:34px 34px 30px;color:#fff;margin-bottom:22px;
+}
+.hero::before{
+  content:"";position:absolute;inset:0;opacity:.14;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px);
+  background-size:34px 34px;
+  mask-image:radial-gradient(ellipse 80% 100% at 100% 0%, black 10%, transparent 70%);
+}
+.hero::after{
+  content:"";position:absolute;right:-60px;top:-60px;width:280px;height:280px;border-radius:50%;
+  background:radial-gradient(circle,rgba(34,195,214,.35),transparent 70%);
+}
+.hero-inner{position:relative;z-index:1;}
+.hero-title{font-size:28px;font-weight:700;max-width:640px;line-height:1.2;}
+.hero-sub{color:#b9cbe4;font-size:14px;margin-top:10px;max-width:620px;line-height:1.6;}
+.hero-stats{display:flex;gap:26px;margin-top:22px;flex-wrap:wrap;}
+.hero-stat{}
+.hero-stat .num{font-family:var(--font-display);font-size:22px;font-weight:700;color:#fff;}
+.hero-stat .lbl{font-size:11px;color:#94aecf;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+
+/* ============================= QUESTION INPUT ============================= */
+.solver-panel{margin-bottom:22px;}
+.solver-grid{display:grid;grid-template-columns:1fr 260px;gap:16px;}
+.field-label{
+  font-size:12px;font-weight:700;color:var(--text-700);margin-bottom:7px;
+  display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.04em;
+}
+textarea.q-input{
+  width:100%;min-height:120px;border:1.5px solid var(--border);border-radius:var(--radius-md);
+  padding:14px;font-size:14.5px;line-height:1.55;color:var(--text-900);resize:vertical;
+  transition:.15s;background:#fbfcfe;
+}
+textarea.q-input:focus{border-color:var(--cyan-500);background:#fff;box-shadow:0 0 0 3px var(--cyan-100);}
+select, .select{
+  width:100%;border:1.5px solid var(--border);border-radius:var(--radius-md);
+  padding:12px 14px;font-size:13.5px;color:var(--text-900);background:#fbfcfe;
+}
+.example-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.chip{
+  background:#f1f5f9;border:1px solid var(--border);color:var(--text-700);
+  padding:7px 13px;border-radius:999px;font-size:12.5px;font-weight:500;
+  transition:.15s;
+}
+.chip:hover{background:var(--cyan-100);border-color:var(--cyan-400);color:var(--cyan-600);}
+.solver-actions{display:flex;justify-content:space-between;align-items:center;margin-top:16px;flex-wrap:wrap;gap:12px;}
+
+/* ============================= UPLOAD PANEL ============================= */
+.upload-zone{
+  border:1.5px dashed var(--border-strong);border-radius:var(--radius-md);
+  padding:24px;text-align:center;background:#fbfcfe;transition:.15s;cursor:pointer;
+}
+.upload-zone.dragover{border-color:var(--cyan-500);background:var(--cyan-100);}
+.upload-zone svg{width:30px;height:30px;color:var(--cyan-500);margin-bottom:8px;}
+.upload-zone .u-title{font-size:13.5px;font-weight:600;color:var(--text-700);}
+.upload-zone .u-sub{font-size:12px;color:var(--text-500);margin-top:4px;}
+.upload-list{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+.upload-item{
+  display:flex;align-items:center;gap:10px;border:1px solid var(--border);
+  border-radius:10px;padding:8px 10px;background:#fff;
+}
+.upload-item img{width:38px;height:38px;object-fit:cover;border-radius:6px;flex:none;}
+.upload-item .u-icon{
+  width:38px;height:38px;border-radius:6px;background:var(--cyan-100);color:var(--cyan-600);
+  display:flex;align-items:center;justify-content:center;flex:none;
+}
+.upload-item .meta{min-width:0;flex:1;}
+.upload-item .fname{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.upload-item .fsize{font-size:11px;color:var(--text-400);}
+.upload-item .remove{border:none;background:none;color:var(--text-400);padding:4px;border-radius:6px;}
+.upload-item .remove:hover{color:var(--danger-fg);background:var(--danger-bg);}
+.ocr-box{
+  margin-top:10px;background:#fbfcfe;border:1px solid var(--border);border-radius:10px;
+  padding:10px 12px;font-size:12.5px;color:var(--text-700);display:none;
+}
+.ocr-box.show{display:block;}
+.upload-item.mismatch{border-color:var(--danger-bd);background:var(--danger-bg);}
+.upload-item.mismatch .fname{color:var(--danger-fg);}
+.week-mismatch-banner{
+  display:flex;align-items:flex-start;gap:10px;margin-top:10px;padding:11px 13px;
+  background:var(--danger-bg);border:1px solid var(--danger-bd);border-radius:10px;
+  color:var(--danger-fg);font-size:12.8px;line-height:1.45;
+}
+.week-mismatch-banner svg{width:17px;height:17px;flex:none;margin-top:1px;}
+
+/* ============================= SOLUTION CARD ============================= */
+.solution{margin-top:22px;}
+.sol-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:16px;}
+.status-badge{
+  display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:10px;
+  font-weight:700;font-size:13px;letter-spacing:.02em;
+}
+.status-pass{background:var(--success-bg);color:var(--success-fg);border:1px solid var(--success-bd);}
+.status-fail{background:var(--danger-bg);color:var(--danger-fg);border:1px solid var(--danger-bd);}
+.status-warn{background:var(--warning-bg);color:var(--warning-fg);border:1px solid var(--warning-bd);}
+.step{
+  border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:10px;overflow:hidden;background:#fff;
+}
+.step-head{
+  display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;
+}
+.step-num{
+  width:26px;height:26px;border-radius:8px;background:var(--navy-900);color:#fff;
+  font-family:var(--font-mono);font-size:12px;display:flex;align-items:center;justify-content:center;flex:none;
+}
+.step-title{font-weight:600;font-size:13.8px;flex:1;}
+.step-chevron{width:16px;height:16px;color:var(--text-400);transition:transform .2s;flex:none;}
+.step.open .step-chevron{transform:rotate(180deg);}
+.step-body{display:none;padding:0 16px 16px 54px;font-size:13.5px;color:var(--text-700);line-height:1.65;}
+.step.open .step-body{display:block;}
+.formula-box{
+  background:var(--navy-950);color:#e7f6fa;border-radius:10px;padding:12px 14px;
+  font-family:var(--font-mono);font-size:13px;margin:8px 0;overflow-x:auto;white-space:pre;
+}
+.formula-box .cy{color:var(--cyan-400);}
+.given-table{width:100%;border-collapse:collapse;margin:6px 0;font-size:13px;}
+.given-table td{padding:6px 10px;border-bottom:1px solid var(--border);}
+.given-table td:first-child{color:var(--text-500);width:45%;}
+.given-table td:last-child{font-family:var(--font-mono);font-weight:600;}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.tag{background:#f1f5f9;border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:11.5px;color:var(--text-700);}
+.evidence-card{
+  border:1px solid var(--border);border-radius:10px;padding:10px;background:#fbfcfe;margin-top:8px;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.evidence-card .ev-icon{width:32px;height:32px;border-radius:8px;background:var(--cyan-100);color:var(--cyan-600);display:flex;align-items:center;justify-content:center;flex:none;}
+.beginner-box{
+  background:var(--cyan-100);border:1px solid #b7e6ee;border-radius:10px;padding:12px 14px;
+  font-size:13.3px;color:#0a5a68;line-height:1.6;
+}
+.sol-footer-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+
+/* ============================= ACCORDIONS (weekly) ============================= */
+.week-hero{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:20px;}
+.acc{border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:12px;overflow:hidden;background:#fff;}
+.acc summary{
+  list-style:none;cursor:pointer;padding:15px 18px;display:flex;align-items:center;gap:12px;font-weight:700;
+  font-size:14.5px;color:var(--text-900);
+}
+.acc summary::-webkit-details-marker{display:none;}
+.acc summary .acc-ico{width:18px;height:18px;color:var(--cyan-600);flex:none;}
+.acc summary::after{content:"";margin-left:auto;width:9px;height:9px;border-right:2px solid var(--text-400);border-bottom:2px solid var(--text-400);transform:rotate(-45deg);transition:.2s;}
+.acc[open] summary::after{transform:rotate(45deg);}
+.acc-body{padding:0 18px 18px 48px;color:var(--text-700);font-size:13.8px;line-height:1.7;}
+.acc-body ul{margin:6px 0;padding-left:18px;}
+.formula-mini{
+  background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin:6px 0;
+  font-family:var(--font-mono);font-size:12.8px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+}
+.formula-mini b{color:var(--navy-800);}
+.reflection-box textarea{
+  width:100%;min-height:80px;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;
+}
+
+/* ============================= GRID / STAT CARDS ============================= */
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.stat-card{padding:18px;border-radius:var(--radius-md);border:1px solid var(--border);background:#fff;}
+.stat-card .lbl{font-size:11.5px;color:var(--text-500);text-transform:uppercase;letter-spacing:.05em;}
+.stat-card .val{font-family:var(--font-display);font-size:24px;font-weight:700;margin-top:4px;}
+
+/* ============================= BROWSE ============================= */
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+.filter-row input[type=search]{
+  flex:1;min-width:200px;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:13.5px;
+}
+.filter-row select{width:auto;min-width:150px;}
+.qa-card{
+  border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px;margin-bottom:12px;background:#fff;
+  cursor:pointer;transition:.15s;
+}
+.qa-card:hover{border-color:var(--cyan-400);box-shadow:var(--shadow-md);}
+.qa-card .qhead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;}
+.qa-card .qtext{font-weight:600;font-size:14px;color:var(--text-900);line-height:1.45;}
+.qa-card .qmeta{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap;}
+.badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;background:#f1f5f9;color:var(--text-700);border:1px solid var(--border);}
+.badge-cyan{background:var(--cyan-100);color:var(--cyan-600);border-color:#b7e6ee;}
+.empty-state{
+  text-align:center;padding:50px 20px;color:var(--text-500);
+}
+.empty-state svg{width:40px;height:40px;color:var(--text-400);margin-bottom:10px;}
+
+/* ============================= MANUAL CHECK ============================= */
+.calc-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.calc-tab{
+  padding:9px 15px;border-radius:999px;border:1px solid var(--border);background:#fff;font-size:13px;font-weight:600;color:var(--text-700);
+}
+.calc-tab.active{background:var(--navy-900);color:#fff;border-color:var(--navy-900);}
+.calc-body{display:none;}
+.calc-body.active{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+@media(max-width:900px){.calc-body.active{grid-template-columns:1fr;}}
+.form-row{margin-bottom:14px;}
+.form-row label{display:block;font-size:12.3px;font-weight:600;color:var(--text-700);margin-bottom:6px;}
+.form-row input{
+  width:100%;border:1.5px solid var(--border);border-radius:9px;padding:10px 12px;font-size:13.5px;background:#fbfcfe;
+}
+.form-row .hint{font-size:11px;color:var(--text-400);margin-top:4px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;}
+.result-panel{background:#fbfcfe;border:1px solid var(--border);border-radius:var(--radius-md);padding:18px;}
+.result-line{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--border);font-size:13px;}
+.result-line:last-child{border-bottom:none;}
+.result-line .rl-label{color:var(--text-500);}
+.result-line .rl-val{font-family:var(--font-mono);font-weight:600;}
+
+/* ============================= SAVED ============================= */
+.saved-card{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 18px;border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:10px;background:#fff;}
+.saved-card .stitle{font-weight:600;font-size:13.8px;}
+.saved-card .smeta{font-size:11.5px;color:var(--text-500);margin-top:4px;}
+.saved-actions{display:flex;gap:6px;}
+
+/* ============================= EDIT VIEW ============================= */
+.edit-list-item{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;
+  border:1px solid var(--border);border-radius:10px;margin-bottom:8px;background:#fff;
+}
+.editable-hint{
+  display:none;font-size:11px;color:var(--warning-fg);background:var(--warning-bg);border:1px solid var(--warning-bd);
+  padding:6px 10px;border-radius:8px;margin-bottom:10px;
+}
+body.edit-mode .editable-hint{display:block;}
+body.edit-mode [contenteditable=true]{outline:1.5px dashed var(--cyan-400);border-radius:4px;}
+
+/* ============================= FOOTER ============================= */
+.app-footer{
+  margin-left:var(--sidebar-w);padding:26px 32px 40px;color:var(--text-500);font-size:12.5px;
+  border-top:1px solid var(--border);
+}
+.app-footer b{color:var(--text-700);}
+.app-footer .foot-row{display:flex;gap:18px;flex-wrap:wrap;}
+
+/* ============================= AI TUTOR ============================= */
+.tutor-fab{
+  position:fixed;right:26px;bottom:26px;z-index:400;
+  width:58px;height:58px;border-radius:50%;border:none;
+  background:linear-gradient(135deg,var(--cyan-500),var(--navy-800));
+  box-shadow:0 8px 24px rgba(8,60,90,.35);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+}
+.tutor-fab svg{width:26px;height:26px;}
+.tutor-fab .pulse{
+  position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--cyan-400);
+  animation:pulse 2.4s ease-out infinite;
+}
+@keyframes pulse{0%{transform:scale(.9);opacity:.7;}100%{transform:scale(1.3);opacity:0;}}
+
+.tutor-panel{
+  position:fixed;right:26px;bottom:96px;width:392px;max-width:92vw;height:560px;max-height:76vh;
+  background:#fff;border-radius:18px;box-shadow:var(--shadow-lg);border:1px solid var(--border);
+  z-index:400;display:none;flex-direction:column;overflow:hidden;
+}
+.tutor-panel.open{display:flex;}
+.tutor-head{
+  background:linear-gradient(135deg,var(--navy-900),var(--navy-800));color:#fff;padding:14px 16px;
+  display:flex;align-items:center;gap:10px;
+}
+.tutor-head .th-title{font-weight:700;font-size:13.5px;font-family:var(--font-display);}
+.tutor-head .th-status{display:flex;align-items:center;gap:5px;font-size:10.5px;color:#a9e8cd;margin-top:2px;}
+.tutor-head .th-status .d{width:6px;height:6px;border-radius:50%;background:#3ddc97;}
+.tutor-head .close-tutor{margin-left:auto;background:rgba(255,255,255,.1);border:none;color:#fff;width:26px;height:26px;border-radius:8px;}
+.tutor-toggles{display:flex;gap:6px;padding:8px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.tutor-toggle{
+  font-size:10.8px;padding:5px 9px;border-radius:999px;border:1px solid var(--border);background:#f8fafc;color:var(--text-500);
+}
+.tutor-toggle.on{background:var(--cyan-100);border-color:var(--cyan-400);color:var(--cyan-600);font-weight:600;}
+.tutor-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;background:#fbfcfe;}
+.msg{max-width:86%;padding:10px 13px;border-radius:12px;font-size:13px;line-height:1.55;}
+.msg.user{align-self:flex-end;background:var(--navy-900);color:#fff;border-bottom-right-radius:4px;}
+.msg.ai{align-self:flex-start;background:#fff;border:1px solid var(--border);border-bottom-left-radius:4px;}
+.msg.ai .src{font-size:10.5px;color:var(--text-400);margin-top:6px;}
+.msg .badge-source{display:inline-block;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:5px;margin-bottom:5px;}
+.badge-source.course{background:var(--success-bg);color:var(--success-fg);}
+.badge-source.general{background:var(--warning-bg);color:var(--warning-fg);}
+.tutor-chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 8px;}
+.tutor-chip{font-size:11px;background:#fff;border:1px solid var(--border);padding:5px 10px;border-radius:999px;color:var(--text-700);}
+.tutor-input-row{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border);align-items:flex-end;}
+.tutor-input-row textarea{
+  flex:1;border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;resize:none;max-height:80px;min-height:38px;
+}
+.tutor-send{width:38px;height:38px;border-radius:10px;border:none;background:var(--cyan-500);color:#fff;flex:none;display:flex;align-items:center;justify-content:center;}
+.tutor-send[disabled]{opacity:.5;}
+.typing-dots{display:flex;gap:4px;padding:4px 0;}
+.typing-dots span{width:6px;height:6px;border-radius:50%;background:var(--text-400);animation:blink 1.2s infinite;}
+.typing-dots span:nth-child(2){animation-delay:.2s;}
+.typing-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes blink{0%,80%,100%{opacity:.25;}40%{opacity:1;}}
+
+.modal-backdrop{position:fixed;inset:0;background:rgba(10,20,35,.5);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-backdrop.open{display:flex;}
+.modal{background:#fff;border-radius:16px;max-width:640px;width:100%;max-height:84vh;overflow-y:auto;box-shadow:var(--shadow-lg);}
+.modal-head{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:#fff;}
+.modal-body{padding:20px;}
+.modal-close{border:none;background:#f1f5f9;width:30px;height:30px;border-radius:8px;color:var(--text-500);}
+
+/* toast */
+.toast-wrap{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:600;display:flex;flex-direction:column;gap:8px;align-items:center;}
+.toast{background:var(--navy-950);color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;box-shadow:var(--shadow-md);animation:toastIn .2s ease;}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ============================= RESPONSIVE ============================= */
+@media(max-width:980px){
+  .grid-3{grid-template-columns:1fr 1fr;}
+  .solver-grid{grid-template-columns:1fr;}
+}
+@media(max-width:760px){
+  :root{--sidebar-w:0px;}
+  .menu-toggle{display:inline-flex;}
+  .brand-text .subtitle{display:none;}
+  .header-mid{display:none;}
+  .designer-chip{display:none;}
+  .sidebar{
+    position:fixed;top:var(--header-h);left:0;right:0;bottom:auto;width:100%;height:auto;
+    display:flex;overflow-x:auto;overflow-y:hidden;padding:10px 10px;gap:8px;
+    transform:translateY(-110%);transition:transform .2s ease;
+  }
+  .sidebar.mobile-open{transform:translateY(0);}
+  .nav-group{display:flex;gap:6px;margin:0;flex:none;}
+  .nav-group-label{display:none;}
+  .nav-item{white-space:nowrap;margin:0;}
+  body.sidebar-open .app-main{margin-top:calc(var(--header-h) + 130px);}
+  .app-main{margin-left:0;padding:20px 16px 90px;}
+  .app-footer{margin-left:0;padding:20px 16px 30px;}
+  .grid-3,.grid-2{grid-template-columns:1fr;}
+  .calc-body.active{grid-template-columns:1fr;}
+  .tutor-panel{right:12px;left:12px;width:auto;bottom:88px;}
+  .tutor-fab{right:16px;bottom:16px;}
+}
+@media(min-width:761px){
+  .sidebar{transform:none !important;}
+}
+.hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<!-- ============================= HEADER ============================= -->
+<header class="app-header">
+  <button class="btn btn-ghost-dark menu-toggle btn-sm" id="menuToggle" aria-label="Toggle navigation">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <div class="brand">
+    <div class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#062733" stroke-width="2"><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/></svg>
+    </div>
+    <div class="brand-text">
+      <div class="title">Timber &amp; Structural Engineering Solver</div>
+      <div class="subtitle">Melbourne Polytechnic · BET 402 Design of Timber Structures</div>
+    </div>
+  </div>
+  <div class="header-mid">
+    <div class="sem-pill"><span class="dot"></span> Semester 2 · 2026</div>
+    <span class="edit-badge">✏️ Edit mode active</span>
+  </div>
+  <div class="header-right">
+    <div class="designer-chip"><span class="designer-avatar">RS</span> R. Sharma · Student Designer</div>
+    <div class="sem-pill" style="gap:5px;font-size:11px;"><span class="dot" style="background:#3ddc97;"></span> Built-in Solver · Offline</div>
+    <button class="btn btn-ghost-dark" id="editModeBtn">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Edit mode
+    </button>
+  </div>
+</header>
+
+<!-- API key modal removed — built-in offline solver active -->
+
+<!-- ============================= SIDEBAR ============================= -->
+<nav class="sidebar" id="sidebar">
+  <div class="nav-group">
+    <div class="nav-group-label">Main</div>
+    <div class="nav-item active" data-view="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      Common Dashboard
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Weekly Portfolios</div>
+    <div class="nav-item" data-view="week1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Week 1 Portfolio</div>
+    <div class="nav-item" data-view="week2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Week 2 Portfolio</div>
+    <div class="nav-item" data-view="week3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Week 3 Portfolio</div>
+    <div class="nav-item" data-view="week4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Week 4 Portfolio</div>
+    <div class="nav-item" data-view="week5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Week 5 Portfolio</div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Tools</div>
+    <div class="nav-item" data-view="browse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Browse Answers</div>
+    <div class="nav-item" data-view="manual"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 7h8M8 11h2M13 11h3M8 15h2M13 15h3"/></svg>Manual Check</div>
+    <div class="nav-item" data-view="saved"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>Saved / PDF Solutions</div>
+    <div class="nav-item" data-view="edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit / Weekly Update</div>
+  </div>
+</nav>
+
+<!-- ============================= MAIN ============================= -->
+<main class="app-main">
+
+  <!-- ============ DASHBOARD ============ -->
+  <section class="view active" id="view-dashboard">
+    <div class="hero">
+      <div class="hero-inner">
+        <h1 class="hero-title">Timber &amp; Structural Engineering Solver</h1>
+        <p class="hero-sub">Type the question or add the original image/PDF. The course solver handles Weeks 1–5; Global mode continues with related engineering questions.</p>
+        <div class="hero-stats">
+          <div class="hero-stat"><div class="num" id="statQACount">0</div><div class="lbl">Course Q&amp;A logged</div></div>
+          <div class="hero-stat"><div class="num" id="statSavedCount">0</div><div class="lbl">Saved solutions</div></div>
+          <div class="hero-stat"><div class="num">5</div><div class="lbl">Weeks covered</div></div>
+          <div class="hero-stat"><div class="num">AS 1720</div><div class="lbl">Primary standard</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-pad solver-panel">
+      <div class="solver-grid">
+        <div>
+          <div class="field-label">Question</div>
+          <textarea class="q-input" id="qInput" placeholder="e.g. A 90×35 mm MGP10 stud, 2.4 m long, carries an axial compression load of 6.2 kN. Check the compression capacity per AS 1720.1."></textarea>
+          <div class="example-chips" id="exampleChips"></div>
+        </div>
+        <div>
+          <div class="field-label">Jurisdiction</div>
+          <select id="jurisdiction">
+            <option value="auto">Auto region</option>
+            <option value="au" selected>Australia · AS/NCC</option>
+            <option value="nz">New Zealand</option>
+            <option value="eu">Europe · Eurocodes</option>
+            <option value="us">United States</option>
+            <option value="ca">Canada</option>
+            <option value="other">Other / general</option>
+          </select>
+          <div style="margin-top:16px;">
+            <div class="field-label">Applies to</div>
+            <select id="weekScope">
+              <option value="auto">Auto-detect week</option>
+              <option value="1">Week 1 · Material properties</option>
+              <option value="2">Week 2 · Loads &amp; beams</option>
+              <option value="3">Week 3 · Tension members</option>
+              <option value="4">Week 4 · Compression members</option>
+              <option value="5">Week 5 · Composite columns</option>
+              <option value="global">Global engineering (beyond course)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- upload -->
+      <div style="margin-top:18px;">
+        <div class="field-label">Attach image, screenshot or PDF</div>
+        <div class="upload-zone" id="uploadZone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+          <div class="u-title">Drag &amp; drop a file, or click to browse</div>
+          <div class="u-sub">PDF · JPG · PNG · WebP · TXT — question screenshots are OCR-read automatically</div>
+          <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.webp,.txt" multiple style="display:none;">
+        </div>
+        <div class="upload-list" id="uploadList"></div>
+        <div class="ocr-box" id="ocrBox"></div>
+      </div>
+
+      <div class="solver-actions">
+        <button class="btn" id="rereadBtn"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-2.64-6.36"/><path d="M21 3v6h-6"/></svg>Re-read carefully</button>
+        <button class="btn btn-primary" id="solveBtn" style="padding:12px 24px;">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+          Solve question
+        </button>
+      </div>
+    </div>
+
+    <div class="solution hidden" id="solutionWrap"></div>
+  </section>
+
+  <!-- ============ WEEK VIEWS injected by JS ============ -->
+  <section class="view" id="view-week1"></section>
+  <section class="view" id="view-week2"></section>
+  <section class="view" id="view-week3"></section>
+  <section class="view" id="view-week4"></section>
+  <section class="view" id="view-week5"></section>
+
+  <!-- ============ BROWSE ANSWERS ============ -->
+  <section class="view" id="view-browse">
+    <div class="view-header">
+      <div class="eyebrow">Tools</div>
+      <h2 class="view-title">Browse Answers</h2>
+      <p class="view-desc">Search the full course question-and-answer database across all weekly portfolios.</p>
+    </div>
+    <div class="filter-row">
+      <input type="search" id="browseSearch" placeholder="Search questions, formulas, keywords…">
+      <select id="browseWeek">
+        <option value="all">All weeks</option>
+        <option value="1">Week 1</option><option value="2">Week 2</option><option value="3">Week 3</option>
+        <option value="4">Week 4</option><option value="5">Week 5</option>
+      </select>
+      <select id="browseTopic">
+        <option value="all">All topics</option>
+      </select>
+    </div>
+    <div id="browseResults"></div>
+  </section>
+
+  <!-- ============ MANUAL CHECK ============ -->
+  <section class="view" id="view-manual">
+    <div class="view-header">
+      <div class="eyebrow">Tools</div>
+      <h2 class="view-title">Manual Check</h2>
+      <p class="view-desc">A professional workspace for independently verifying timber and structural calculations. Enter values from your own workings or from AS 1720 material tables — the tool will not assume strength values for you.</p>
+    </div>
+    <div class="calc-tabs" id="calcTabs"></div>
+    <div id="calcBodies"></div>
+  </section>
+
+  <!-- ============ SAVED / PDF ============ -->
+  <section class="view" id="view-saved">
+    <div class="view-header">
+      <div class="eyebrow">Tools</div>
+      <h2 class="view-title">Saved / PDF Solutions</h2>
+      <p class="view-desc">Every solution you save keeps its full calculation trail and evidence, ready to reopen, search or export.</p>
+    </div>
+    <div class="filter-row">
+      <input type="search" id="savedSearch" placeholder="Search saved solutions…">
+      <select id="savedWeekFilter">
+        <option value="all">All weeks</option>
+        <option value="1">Week 1</option><option value="2">Week 2</option><option value="3">Week 3</option>
+        <option value="4">Week 4</option><option value="5">Week 5</option><option value="global">Global</option>
+      </select>
+    </div>
+    <div id="savedList"></div>
+  </section>
+
+  <!-- ============ EDIT / WEEKLY UPDATE ============ -->
+  <section class="view" id="view-edit">
+    <div class="view-header">
+      <div class="eyebrow">Tools</div>
+      <h2 class="view-title">Edit / Weekly Update</h2>
+      <p class="view-desc">Add, edit or remove questions and weekly content. Turn on Edit mode from the header to unlock inline editing across the site.</p>
+    </div>
+
+    <div class="card card-pad" style="margin-bottom:18px;">
+      <h3 style="font-size:15px;margin-bottom:14px;">Add a new question to a week</h3>
+      <div class="form-grid">
+        <div class="form-row"><label>Week</label>
+          <select id="editWeekSelect">
+            <option value="1">Week 1</option><option value="2">Week 2</option><option value="3">Week 3</option>
+            <option value="4">Week 4</option><option value="5">Week 5</option>
+          </select>
+        </div>
+        <div class="form-row"><label>Topic</label><input type="text" id="editTopic" placeholder="e.g. Bolt-hole effects"></div>
+      </div>
+      <div class="form-row"><label>Question</label><input type="text" id="editQuestion" placeholder="Enter the question text"></div>
+      <div class="form-row"><label>Answer / worked solution summary</label><input type="text" id="editAnswer" placeholder="Enter the concise answer or working"></div>
+      <button class="btn btn-primary" id="addQuestionBtn">
+        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        Add question
+      </button>
+    </div>
+
+    <div class="card card-pad">
+      <h3 style="font-size:15px;margin-bottom:14px;">Manage existing course questions</h3>
+      <div id="editList"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  <div class="foot-row">
+    <span><b>BET 402 — Design of Timber Structures</b></span>
+    <span>Semester 2 · 2026</span>
+    <span>Designed by R. Sharma, Student Engineer</span>
+    <span>For educational use only — not for construction certification.</span>
+  </div>
+</footer>
+
+<!-- ============================= AI TUTOR ============================= -->
+<button class="tutor-fab" id="tutorFab" aria-label="Open AI Tutor">
+  <span class="pulse"></span>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 014 4c0 1.5-.8 2.8-2 3.5V12h-4V9.5C8.8 8.8 8 7.5 8 6a4 4 0 014-4z"/><path d="M6 12h12v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6z"/><path d="M9 16h.01M15 16h.01"/></svg>
+</button>
+
+<div class="tutor-panel" id="tutorPanel">
+  <div class="tutor-head">
+    <div>
+      <div class="th-title">AI Engineering Tutor</div>
+      <div class="th-status"><span class="d"></span> Built-in Engine · Offline</div>
+    </div>
+    <button class="close-tutor" id="closeTutor">✕</button>
+  </div>
+  <div class="tutor-toggles">
+    <button class="tutor-toggle on" id="toggleContext">Use current solution as context</button>
+    <button class="tutor-toggle" id="toggleAdvanced">Advanced settings</button>
+  </div>
+  <div id="advancedPanel" class="hidden" style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:11.5px;color:var(--text-500);">
+    Response depth:
+    <select id="tutorDepth" style="width:auto;padding:5px 8px;font-size:11.5px;margin-left:6px;">
+      <option value="concise">Concise</option>
+      <option value="detailed" selected>Detailed</option>
+    </select>
+  </div>
+  <div class="tutor-body" id="tutorBody">
+    <div class="msg ai">Hi — I'm your engineering tutor for BET 402. Ask me about timber design, a formula, or follow up on the current solution. I'll flag when an answer goes beyond what the course has covered.</div>
+  </div>
+  <div class="tutor-chips" id="tutorChips"></div>
+  <div class="tutor-input-row">
+    <textarea id="tutorInput" placeholder="Ask a question…" rows="1"></textarea>
+    <button class="tutor-send" id="tutorSend" title="Send">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- Modal for opening saved / browse solutions -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle" style="font-size:15px;">Solution</h3>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* =========================================================================
+   TIMBER & STRUCTURAL ENGINEERING SOLVER — APPLICATION LOGIC
+   ========================================================================= */
+
+/* ---------- small utils ---------- */
+const $ = (sel,root=document)=>root.querySelector(sel);
+const $$ = (sel,root=document)=>Array.from(root.querySelectorAll(sel));
+const uid = ()=> 'id-'+Math.random().toString(36).slice(2,10);
+let _lastToastMsg = null, _lastToastAt = 0;
+function toast(msg){
+  const now = Date.now();
+  // Swallow an identical message repeated within 500ms (e.g. a fast
+  // double-click firing the same handler twice) instead of stacking
+  // duplicate toasts on screen.
+  if(msg === _lastToastMsg && now - _lastToastAt < 500) return;
+  _lastToastMsg = msg; _lastToastAt = now;
+  const wrap = $('#toastWrap');
+  const t = document.createElement('div');
+  t.className='toast'; t.textContent=msg;
+  wrap.appendChild(t);
+  setTimeout(()=>t.remove(),3200);
+}
+function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function store(key, val){ if(val===undefined){ const v=localStorage.getItem(key); try{return JSON.parse(v);}catch(e){return null;} } localStorage.setItem(key, JSON.stringify(val)); }
+
+/* ---------- pdf.js setup ---------- */
+if(window.pdfjsLib){
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+async function extractPdfText(file){
+  if(!window.pdfjsLib) throw new Error('PDF reader unavailable');
+  const buf = await file.arrayBuffer();
+  // verbosity:0 = errors only — silences the benign "fake worker" / font-table
+  // console warnings pdf.js logs in sandboxed preview environments; text
+  // extraction (getTextContent) doesn't touch glyph rendering so it's unaffected.
+  const pdf = await pdfjsLib.getDocument({data: buf, verbosity: 0}).promise;
+  let text = '';
+  const pageCount = Math.min(pdf.numPages, 15);
+  for(let i=1;i<=pageCount;i++){
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(it=>it.str).join(' ') + '\n';
+  }
+  return text.trim();
+}
+
+/* ---------- persisted state ---------- */
+let editMode = false;
+let savedSolutions = store('tses_saved') || [];
+let customQuestions = store('tses_custom_qs') || {1:[],2:[],3:[],4:[],5:[]};
+let currentUploads = [];
+const uploaderRegistry = {};
+let currentSolutionCtx = null;
+let tutorHistory = [];
+let tutorAbort = null;
+
+/* =========================================================================
+   1. WEEKLY CONTENT DATA
+   ========================================================================= */
+const WEEKS = {
+  1:{
+    title:'Week 1 — Timber &amp; Material Properties',
+    intro:'Establishes the mechanical properties of structural timber, grading systems, and the strength-grouping approach used throughout AS 1720.1 for every later calculation.',
+    topics:['Timber species & stress grades (MGP, F-grades, seasoned/unseasoned)','Characteristic strength values (f\'t, f\'c, f\'b, f\'s)','Modulus of elasticity & rigidity (E, G)','Density & moisture content effects','Modification factors k1–k9 overview'],
+    formulas:[
+      {name:'Design capacity (general form)', f:'φ · k₁·k₂·…·kₙ · f\' · (property)', d:'The universal AS 1720.1 pattern: characteristic strength reduced by a capacity factor and relevant modification factors.'},
+      {name:'Load duration factor k1', f:'k₁ (Table H2.4, AS 1720.1)', d:'Adjusts strength for the duration of the critical load case (5 min to 50+ years).'}
+    ],
+    standards:['AS 1720.1:2010 — Timber structures, Part 1: Design methods','AS 1720.2 — Timber structures, Part 2: Timber properties'],
+    evidence:['AS 1720.1 Table H3.1 — characteristic strengths by grade','AS 1720.1 Table H2.4 — load duration factor k1'],
+  },
+  2:{
+    title:'Week 2 — Loads &amp; Beam Calculations',
+    intro:'Covers permanent (G) and imposed (Q) actions, load combinations from AS/NZS 1170, and bending/shear/deflection behaviour of simply supported timber beams.',
+    topics:['Dead, live and combined load cases (AS/NZS 1170.0)','Bending moment & shear force diagrams','Section modulus and second moment of area','Serviceability deflection limits (span/250, span/300)'],
+    formulas:[
+      {name:'Design bending moment (UDL, simply supported)', f:"M* = w·L² / 8", d:'Peak moment at midspan for a uniformly distributed load.'},
+      {name:'Bending capacity', f:"φ·M_d = φ·k1·k4·k6·k9·k12·f'b·Z", d:'Design bending capacity per AS 1720.1 Cl. 3.2.'},
+      {name:'Deflection (UDL)', f:"δ = 5·w·L⁴ / (384·E·I)", d:'Serviceability check against a span-based limit.'}
+    ],
+    standards:['AS 1720.1:2010 Section 3 — Members subject to bending','AS/NZS 1170.0 — Structural design actions, general principles'],
+    evidence:['AS/NZS 1170.1 Table 3.1 — minimum imposed floor actions','AS 1720.1 Cl. 2.4.2 — deflection limits'],
+  },
+  3:{
+    title:'Week 3 — Tension Members',
+    intro:'Focuses on axially loaded tension members, the effect of bolt holes and notches on net section, and axial deformation under service loads.',
+    topics:['Net vs gross cross-sectional area','Bolt-hole and notch effects on capacity','Tension parallel to grain','Axial deformation under sustained load'],
+    formulas:[
+      {name:'Tension capacity', f:"φ·N_dt = φ·k1·k4·f't·A_n", d:"A_n is the net area after deducting bolt holes/notches, per AS 1720.1 Cl. 3.4."},
+      {name:'Net area at a bolted connection', f:"A_n = A_g − Σ(hole width × thickness)", d:'Deduct all holes in the critical failure plane.'},
+      {name:'Axial deformation', f:"δ = P·L / (A·E)", d:'Elastic elongation under sustained axial load P.'}
+    ],
+    standards:['AS 1720.1:2010 Cl. 3.4 — Members subject to tension'],
+    evidence:['AS 1720.1 Cl. 3.4.2 — net area at connections'],
+  },
+  4:{
+    title:'Week 4 — Compression Members',
+    intro:'Covers axially loaded columns, slenderness and buckling behaviour, effective length factors, and the stability modification factor k12.',
+    topics:['Slenderness coefficient S','Effective length factors g13/g14 by end restraint','Stability factor k12','Column buckling about both axes'],
+    formulas:[
+      {name:'Slenderness coefficient', f:"S = g13·L / d  (or  Le / d)", d:'Governs which buckling mode controls — geometric slenderness ratio.'},
+      {name:'Compression capacity', f:"φ·N_dc = φ·k1·k4·k6·k12·f'c·A", d:'k12 (stability factor) reduces capacity as slenderness increases, per AS 1720.1 Cl. 3.3.'},
+      {name:'Euler-type check (reference)', f:"N_crit = π²·E·I / Le²", d:'Reference elastic buckling load used to sanity-check k12 trends.'}
+    ],
+    standards:['AS 1720.1:2010 Cl. 3.3 — Members subject to compression','AS 1720.1 Table 3.3 — k12 stability factor'],
+    evidence:['AS 1720.1 Table 3.3 — k12 vs slenderness S','AS 1720.1 Cl. 3.3.3 — effective length factors g13, g14'],
+  },
+  5:{
+    title:'Week 5 — Spaced &amp; Composite Columns',
+    intro:'Extends compression member theory to built-up sections: spaced columns with packing pieces, and composite/mechanically-jointed columns acting compositely under load.',
+    topics:['Spaced column geometry & packing pieces','Composite action & connector efficiency','Combined slenderness for spaced columns','Final capacity verification & governing mode'],
+    formulas:[
+      {name:'Spaced column modified slenderness', f:"S₁ = α · S", d:'α accounts for the reduced effective stiffness of the spaced arrangement (AS 1720.1 Cl. 3.8).'},
+      {name:'Composite column capacity', f:"φ·N_dc = φ·k1·k4·k12·f'c·(n·A_i)", d:'Effective area sums contributing members, adjusted for connector/composite efficiency.'}
+    ],
+    standards:['AS 1720.1:2010 Cl. 3.8 — Spaced columns','AS 1720.1 Cl. 3.9 — Built-up and composite members'],
+    evidence:['AS 1720.1 Cl. 3.8.3 — packing piece spacing limits'],
+  }
+};
+
+/* Signature keywords used to guess which week's content a file belongs to,
+   so we can warn if e.g. a Week 2 PDF gets dropped into the Week 1 portfolio. */
+const WEEK_SIGNATURES = {
+  1:['mgp10','mgp12','mgp15','f-grade','f grade','stress grade','characteristic strength',
+     "f't","f'c","f'b","f's",'modulus of elasticity','moisture content','seasoned timber',
+     'unseasoned timber','k1–k9','material properties'],
+  2:['bending moment','shear force','deflection','udl','uniformly distributed load',
+     'section modulus','second moment of area','simply supported beam','as/nzs 1170',
+     'span/250','span/300','dead load','live load','imposed action'],
+  3:['net area','bolt hole','tension member','net section','tension parallel to grain',
+     'axial deformation','a_n','ag −','bolted connection'],
+  4:['slenderness','buckling','k12','compression member','effective length','g13','g14',
+     'stability factor','pin-pin','euler'],
+  5:['spaced column','composite column','packing piece','built-up section','connector efficiency',
+     'combined slenderness','mechanically-jointed']
+};
+/**
+ * Heuristically guess which week a block of extracted text belongs to.
+ * Checks explicit "Week N" mentions first (high confidence), then falls
+ * back to topic-keyword scoring. Returns {week, confidence} or null.
+ */
+function detectTextWeek(text){
+  if(!text || text.trim().length < 8) return null;
+  const t = text.toLowerCase();
+  const explicit = [...t.matchAll(/\bweek\s*([1-5])\b/g)].map(m=>parseInt(m[1]));
+  if(explicit.length){
+    const counts = {};
+    explicit.forEach(w=>counts[w]=(counts[w]||0)+1);
+    const best = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+    return {week:parseInt(best[0]), confidence:'high'};
+  }
+  const scores = {1:0,2:0,3:0,4:0,5:0};
+  for(const w of [1,2,3,4,5]){
+    WEEK_SIGNATURES[w].forEach(kw=>{ if(t.includes(kw)) scores[w]++; });
+  }
+  const ranked = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  const [topWeek, topScore] = ranked[0];
+  const secondScore = ranked[1] ? ranked[1][1] : 0;
+  if(topScore >= 2 && topScore > secondScore){
+    return {week:parseInt(topWeek), confidence:'medium'};
+  }
+  return null;
+}
+
+const SEED_QUESTIONS = {
+  1:[{id:uid(),topic:'Stress grades',q:"What does 'MGP10' mean and how does it differ from 'F-grade' timber?",a:"MGP10 is a machine-graded pine stress grade with characteristic properties set out in AS 1720.1 Table H3.1; F-grades (e.g. F5, F8) are visually or machine stress-graded across a wider range of species, each mapped to its own characteristic strength set."}],
+  2:[{id:uid(),topic:'Beam design',q:'A 140×45 mm F7 joist spans 3.6 m simply supported with a UDL of 2.4 kN/m. Find the design bending moment.',a:"M* = wL²/8 = 2.4 × 3.6² / 8 = 3.89 kN·m."}],
+  3:[{id:uid(),topic:'Bolt holes',q:'A 90×35 mm tension member has a single M12 bolt hole (14 mm dia. including tolerance). Find the net area.',a:'A_n = (90×35) − (14×35) = 3150 − 490 = 2660 mm².'}],
+  4:[{id:uid(),topic:'Column stability',q:'A 90×90 mm stud, 2.4 m long, pin-pin both ends. Find the slenderness coefficient S.',a:'S = Le/d = 2400/90 = 26.7 (about the minor axis, which typically governs).'}],
+  5:[{id:uid(),topic:'Spaced columns',q:'Why is the modified slenderness of a spaced column typically lower than a solid column of the same overall dimension?',a:"Packing pieces and end-fixity in a spaced column increase effective stiffness about the critical axis, reducing the effective slenderness relative to an equivalent solid section."}]
+};
+
+/* =========================================================================
+   2. NAVIGATION
+   ========================================================================= */
+function setView(name){
+  $$('.view').forEach(v=>v.classList.remove('active'));
+  const target = document.getElementById('view-'+name);
+  if(target) target.classList.add('active');
+  $$('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.view===name));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(document.body.classList.contains('sidebar-mobile-open')) closeMobileSidebar();
+}
+$$('.nav-item').forEach(item=>{
+  item.addEventListener('click', ()=> setView(item.dataset.view));
+});
+function closeMobileSidebar(){
+  $('#sidebar').classList.remove('mobile-open');
+  document.body.classList.remove('sidebar-open');
+}
+$('#menuToggle').addEventListener('click', ()=>{
+  $('#sidebar').classList.toggle('mobile-open');
+  document.body.classList.toggle('sidebar-open');
+});
+
+/* API key management removed — using built-in offline solver */
+function getApiKey(){ return ''; }
+function refreshApiKeyBtnLabel(){}
+
+/* =========================================================================
+   3. EDIT MODE
+   ========================================================================= */
+$('#editModeBtn').addEventListener('click', ()=>{
+  editMode = !editMode;
+  document.body.classList.toggle('edit-mode', editMode);
+  toast(editMode ? 'Edit mode turned on — inline editing unlocked' : 'Edit mode turned off');
+});
+
+/* =========================================================================
+   4. WEEK PAGE RENDERING
+   ========================================================================= */
+function allQuestionsForWeek(w){
+  return [...(SEED_QUESTIONS[w]||[]), ...(customQuestions[w]||[])];
+}
+function renderWeekPage(w){
+  const data = WEEKS[w];
+  const qs = allQuestionsForWeek(w);
+  const el = document.getElementById('view-week'+w);
+  el.innerHTML = `
+    <div class="week-hero">
+      <div>
+        <div class="eyebrow">Weekly Portfolio</div>
+        <h2 class="view-title">${data.title}</h2>
+        <p class="view-desc">${data.intro}</p>
+      </div>
+      <div class="stat-card" style="min-width:150px;">
+        <div class="lbl">Questions logged</div>
+        <div class="val">${qs.length}</div>
+      </div>
+    </div>
+
+    <div class="card card-pad" style="margin-bottom:20px;">
+      <div class="field-label" style="margin-bottom:10px;">Solve a Week ${w} question</div>
+      <textarea class="q-input" id="w${w}QInput" style="min-height:90px;" placeholder="Type a question for this week's topics, or attach an image/PDF/screenshot below…"></textarea>
+      <div class="upload-zone" id="w${w}UploadZone" style="margin-top:10px;padding:16px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px;"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+        <div class="u-title" style="font-size:12.5px;">Drag &amp; drop, or click to attach PDF / image / TXT</div>
+        <input type="file" id="w${w}FileInput" accept=".pdf,.jpg,.jpeg,.png,.webp,.txt" multiple style="display:none;">
+      </div>
+      <div class="upload-list" id="w${w}UploadList"></div>
+      <div id="w${w}MismatchBanner"></div>
+      <div class="ocr-box" id="w${w}OcrBox"></div>
+      <div class="solver-actions">
+        <button class="btn btn-sm" id="w${w}RereadBtn"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-2.64-6.36"/><path d="M21 3v6h-6"/></svg>Re-read carefully</button>
+        <button class="btn btn-primary" id="w${w}SolveBtn">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+          Solve for Week ${w}
+        </button>
+      </div>
+      <div class="solution hidden" id="w${w}SolutionWrap"></div>
+    </div>
+
+    <details class="acc" open>
+      <summary><svg class="acc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Topics covered</summary>
+      <div class="acc-body"><ul>${data.topics.map(t=>`<li>${t}</li>`).join('')}</ul></div>
+    </details>
+
+    <details class="acc">
+      <summary><svg class="acc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 17h16M4 12h10M4 7h16"/></svg>Key formulas</summary>
+      <div class="acc-body">
+        ${data.formulas.map(f=>`<div class="formula-mini"><span><b>${f.name}</b> — ${f.d}</span><span>${f.f}</span></div>`).join('')}
+      </div>
+    </details>
+
+    <details class="acc">
+      <summary><svg class="acc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 4.5-9 4.5-9-4.5L12 2z"/><path d="M3 12l9 4.5 9-4.5M3 17l9 4.5 9-4.5"/></svg>Important standards</summary>
+      <div class="acc-body"><ul>${data.standards.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+    </details>
+
+    <details class="acc" open>
+      <summary><svg class="acc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>Worked questions &amp; answers (${qs.length})</summary>
+      <div class="acc-body" id="week${w}Questions"></div>
+    </details>
+
+    <details class="acc">
+      <summary><svg class="acc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M3 13l4-4 4 3 6-6 4 4"/></svg>Visual evidence</summary>
+      <div class="acc-body">
+        ${data.evidence.map(ev=>`<div class="evidence-card"><div class="ev-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M3 13l4-4 4 3 6-6 4 4"/></svg></div><div><b style="font-size:12.8px;">${ev}</b><div style="font-size:12px;color:var(--text-500);margin-top:2px;">Referenced source table — click to enlarge in a full solve.</div></div></div>`).join('')}
+      </div>
+    </details>
+
+    <details class="acc">
+      <summary><svg class="acc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 014 4c0 1.5-.8 2.8-2 3.5V12h-4V9.5C8.8 8.8 8 7.5 8 6a4 4 0 014-4z"/><path d="M6 12h12v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6z"/></svg>Beginner-friendly explanation</summary>
+      <div class="acc-body"><div class="beginner-box">${beginnerBlurb(w)}</div></div>
+    </details>
+
+    <details class="acc reflection-box">
+      <summary><svg class="acc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Reflection</summary>
+      <div class="acc-body">
+        <textarea placeholder="What was the trickiest part of this week's content? Write a short reflection…" id="reflection${w}">${localStorage.getItem('tses_reflect_'+w) || ''}</textarea>
+        <button class="btn btn-sm" style="margin-top:8px;" onclick="saveReflection(${w})">Save reflection</button>
+      </div>
+    </details>
+  `;
+  renderWeekQuestions(w);
+  wireWeekSolver(w);
+}
+const weekUploads = {1:[],2:[],3:[],4:[],5:[]};
+function wireWeekSolver(w){
+  const key = 'week'+w;
+  uploaderRegistry[key] = wireUploader({
+    key, uploads: weekUploads[w],
+    expectedWeek: w,
+    zoneEl: document.getElementById('w'+w+'UploadZone'),
+    inputEl: document.getElementById('w'+w+'FileInput'),
+    listEl: document.getElementById('w'+w+'UploadList'),
+    ocrEl: document.getElementById('w'+w+'OcrBox'),
+    bannerEl: document.getElementById('w'+w+'MismatchBanner'),
+    questionEl: document.getElementById('w'+w+'QInput'),
+    rereadBtnEl: document.getElementById('w'+w+'RereadBtn')
+  });
+  renderUploadListGeneric(uploaderRegistry[key]);
+  document.getElementById('w'+w+'SolveBtn').addEventListener('click', ()=>{
+    const cfg = uploaderRegistry[key];
+    const bad = cfg.uploads.find(u=>u.weekMismatch);
+    if(bad){
+      toast(`This looks like Week ${bad.weekMismatch.week} content — remove it or upload it in the Week ${bad.weekMismatch.week} portfolio.`);
+      return;
+    }
+    solveQuestionGeneric({
+      questionEl: document.getElementById('w'+w+'QInput'),
+      jurisdiction: 'auto',
+      weekScope: String(w),
+      outputEl: document.getElementById('w'+w+'SolutionWrap'),
+      btnEl: document.getElementById('w'+w+'SolveBtn'),
+      uploaderKey: key,
+      btnDefaultHtml: `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg> Solve for Week ${w}`
+    });
+  });
+}
+function beginnerBlurb(w){
+  const blurbs = {
+    1:"Think of timber strength like a food nutrition label — every grade (MGP10, F7…) comes with known numbers for how much load it can take. We reduce those numbers slightly with 'k' factors to be safe for how long the load lasts and how the timber is used.",
+    2:"A beam is like a diving board: load pushes it down (bending), the ends want to shear off from the middle, and it visibly sags (deflection). We check all three so it's both strong enough and doesn't feel 'bouncy' in use.",
+    3:"A tension member is being stretched, like a rope. Drilling a bolt hole removes material exactly where the rope is thinnest — so we always check the reduced ('net') area, not the full board width.",
+    4:"A compression member is being squashed, like a soda can. Short, stocky columns crush; long, skinny columns buckle sideways first. Slenderness (S) tells us which failure mode to worry about.",
+    5:"Spaced and composite columns are a few timber pieces working as a team — packing blocks or connectors let them act stiffer together than any single piece would alone, so we check the *combined* behaviour, not just one member."
+  };
+  return blurbs[w];
+}
+function renderWeekQuestions(w){
+  const qs = allQuestionsForWeek(w);
+  const wrap = document.getElementById('week'+w+'Questions');
+  if(!qs.length){ wrap.innerHTML = `<p style="color:var(--text-500);">No questions logged yet for this week.</p>`; return; }
+  wrap.innerHTML = qs.map(q=>`
+    <div class="qa-card" onclick="openQAModal('${q.id}', ${w})">
+      <div class="qhead">
+        <div class="qtext">${escapeHtml(q.q)}</div>
+        <span class="badge badge-cyan">Week ${w}</span>
+      </div>
+      <div class="qmeta"><span class="badge">${escapeHtml(q.topic||'General')}</span></div>
+    </div>
+  `).join('');
+}
+function saveReflection(w){
+  const val = document.getElementById('reflection'+w).value;
+  localStorage.setItem('tses_reflect_'+w, val);
+  toast('Reflection saved for Week '+w);
+}
+window.saveReflection = saveReflection;
+
+for(let w=1; w<=5; w++) renderWeekPage(w);
+
+/* =========================================================================
+   5. QA MODAL (browse / week question open)
+   ========================================================================= */
+function findQuestionById(id){
+  for(let w=1; w<=5; w++){
+    const found = allQuestionsForWeek(w).find(q=>q.id===id);
+    if(found) return {...found, week:w};
+  }
+  return null;
+}
+function openQAModal(id, w){
+  const q = findQuestionById(id);
+  if(!q) return;
+  $('#modalTitle').textContent = 'Week '+q.week+' · '+ (q.topic||'Question');
+  $('#modalBody').innerHTML = `
+    <div class="given-table" style="margin-bottom:14px;">
+      <table class="given-table" style="width:100%;"><tr><td>Question</td><td style="font-family:var(--font-body);font-weight:600;">${escapeHtml(q.q)}</td></tr></table>
+    </div>
+    <div class="beginner-box" style="margin-bottom:12px;"><b>Answer / working:</b><br>${escapeHtml(q.a)}</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-primary btn-sm" onclick="sendToSolver('${q.q.replace(/'/g,"\\'")}')">Open in solver</button>
+      <button class="btn btn-sm" onclick="closeModal()">Close</button>
+    </div>
+  `;
+  $('#modalBackdrop').classList.add('open');
+}
+function closeModal(){ $('#modalBackdrop').classList.remove('open'); }
+window.openQAModal = openQAModal;
+window.closeModal = closeModal;
+$('#modalClose').addEventListener('click', closeModal);
+$('#modalBackdrop').addEventListener('click', e=>{ if(e.target.id==='modalBackdrop') closeModal(); });
+function sendToSolver(text){
+  closeModal();
+  setView('dashboard');
+  $('#qInput').value = text;
+  toast('Question loaded into solver — press Solve to run it');
+}
+window.sendToSolver = sendToSolver;
+
+/* =========================================================================
+   6. DASHBOARD — EXAMPLE CHIPS
+   ========================================================================= */
+const EXAMPLES = [
+  "Check the bending capacity of a 190×45 mm F8 joist spanning 4.2 m under a 3.1 kN/m UDL.",
+  "Find the net area of a 70×35 mm tension member with two M10 bolt holes in the same section.",
+  "A 90×90 mm MGP10 stud, 2.7 m long, pin-pin ends — determine the slenderness coefficient S.",
+  "Compare k12 stability factors for S = 10 vs S = 30 in an AS 1720.1 compression check."
+];
+$('#exampleChips').innerHTML = EXAMPLES.map(e=>`<button type="button" class="chip" onclick="useExample(this)">${e.length>58? e.slice(0,58)+'…':e}</button>`).join('');
+function useExample(btn){
+  const idx = Array.from(btn.parentElement.children).indexOf(btn);
+  $('#qInput').value = EXAMPLES[idx];
+}
+window.useExample = useExample;
+
+/* =========================================================================
+   7. FILE UPLOAD
+   ========================================================================= */
+/**
+ * Generic, reusable uploader wiring. Each solver instance (dashboard + each
+ * weekly portfolio) gets its own uploads array and DOM ids so they never clash.
+ * cfg: {uploads:[], zoneEl, inputEl, listEl, ocrEl, questionEl}
+ */
+function wireUploader(cfg){
+  cfg.zoneEl.addEventListener('click', ()=>cfg.inputEl.click());
+  cfg.zoneEl.addEventListener('dragover', e=>{e.preventDefault(); cfg.zoneEl.classList.add('dragover');});
+  cfg.zoneEl.addEventListener('dragleave', ()=>cfg.zoneEl.classList.remove('dragover'));
+  cfg.zoneEl.addEventListener('drop', e=>{
+    e.preventDefault(); cfg.zoneEl.classList.remove('dragover');
+    handleFilesGeneric(e.dataTransfer.files, cfg);
+  });
+  cfg.inputEl.addEventListener('change', e=>handleFilesGeneric(e.target.files, cfg));
+  if(cfg.rereadBtnEl){
+    cfg.rereadBtnEl.addEventListener('click', ()=>rereadUploadsGeneric(cfg));
+  }
+  return cfg;
+}
+function handleFilesGeneric(fileList, cfg){
+  Array.from(fileList).forEach(file=>{
+    const item = {id:uid(), file, name:file.name, size:file.size, type:file.type, dataUrl:null, text:null, isPdf:false, pdfError:null, weekMismatch:null};
+    cfg.uploads.push(item);
+    if(file.type.startsWith('image/')){
+      const reader = new FileReader();
+      reader.onload = ()=>{ item.dataUrl = reader.result; renderUploadListGeneric(cfg); };
+      reader.readAsDataURL(file);
+    } else if(file.type==='text/plain'){
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        item.text = reader.result;
+        applyWeekCheck(item, cfg);
+        renderUploadListGeneric(cfg);
+      };
+      reader.readAsText(file);
+    } else if(file.type==='application/pdf' || file.name.toLowerCase().endsWith('.pdf')){
+      item.isPdf = true;
+      extractPdfText(file).then(text=>{
+        item.text = text;
+        if(!text){ item.pdfError = 'No selectable text found (likely a scanned PDF) — try re-read, or attach a screenshot image instead.'; }
+        applyWeekCheck(item, cfg);
+        renderUploadListGeneric(cfg);
+      }).catch(err=>{
+        item.pdfError = 'Could not read this PDF (' + err.message + '). Try a screenshot image instead.';
+        renderUploadListGeneric(cfg);
+      });
+    }
+  });
+  renderUploadListGeneric(cfg);
+}
+/**
+ * If this uploader belongs to a specific weekly portfolio (cfg.expectedWeek),
+ * check the extracted text against the other weeks' signature keywords and
+ * flag a mismatch (e.g. a Week 2 PDF dropped into the Week 1 portfolio).
+ */
+function applyWeekCheck(item, cfg){
+  item.weekMismatch = null;
+  if(!cfg.expectedWeek || !item.text) return;
+  const guess = detectTextWeek(item.text);
+  if(guess && guess.week !== cfg.expectedWeek){
+    item.weekMismatch = guess;
+  }
+}
+function renderUploadListGeneric(cfg){
+  cfg.listEl.innerHTML = cfg.uploads.map(u=>`
+    <div class="upload-item ${u.weekMismatch?'mismatch':''}">
+      ${u.dataUrl ? `<img src="${u.dataUrl}" alt="">` : `<div class="u-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></div>`}
+      <div class="meta">
+        <div class="fname">${escapeHtml(u.name)}</div>
+        <div class="fsize">${(u.size/1024).toFixed(0)} KB${u.isPdf ? (u.pdfError ? ' · ' + escapeHtml(u.pdfError) : (u.text ? ' · text extracted' : ' · reading…')) : ''}${u.weekMismatch ? ' · looks like Week '+u.weekMismatch.week : ''}</div>
+      </div>
+      <button class="remove" onclick="removeUploadGeneric('${cfg.key}','${u.id}')" aria-label="Remove file">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+  `).join('');
+  if(cfg.bannerEl){
+    const bad = cfg.uploads.find(u=>u.weekMismatch);
+    cfg.bannerEl.innerHTML = bad ? `
+      <div class="week-mismatch-banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86l-8.18 14.14A2 2 0 004 21h16a2 2 0 001.89-2.99L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        <div><b>Wrong week?</b> "${escapeHtml(bad.name)}" looks like Week ${bad.weekMismatch.week} content, not Week ${cfg.expectedWeek}. Remove it and upload it in the correct week's portfolio, or double-check the file — solving is blocked while this is attached.</div>
+      </div>` : '';
+  }
+}
+function removeUploadGeneric(key, id){
+  const cfg = uploaderRegistry[key];
+  if(!cfg) return;
+  cfg.uploads = cfg.uploads.filter(u=>u.id!==id);
+  uploaderRegistry[key].uploads = cfg.uploads;
+  renderUploadListGeneric(cfg);
+  if(!cfg.uploads.length && cfg.ocrEl) cfg.ocrEl.classList.remove('show');
+}
+window.removeUploadGeneric = removeUploadGeneric;
+
+async function rereadUploadsGeneric(cfg){
+  if(!cfg.uploads.length){ toast('Attach a file first'); return; }
+  const box = cfg.ocrEl; box.classList.add('show'); box.textContent = 'Re-reading attached file(s)…';
+  const imgItem = cfg.uploads.find(u=>u.dataUrl);
+  if(imgItem){
+    try{
+      const extracted = await ocrImageWithClaude(imgItem.dataUrl, imgItem.type);
+      box.innerHTML = `<b>Detected question:</b><br>${escapeHtml(extracted)}`;
+      cfg.questionEl.value = extracted;
+    }catch(err){
+      box.textContent = 'Could not read the image right now (' + err.message + '). You can still type the question manually.';
+    }
+    return;
+  }
+  const txtItem = cfg.uploads.find(u=>u.text);
+  if(txtItem){
+    box.innerHTML = `<b>Detected text${txtItem.isPdf?' (from PDF)':''}:</b><br>${escapeHtml(txtItem.text.slice(0,600))}${txtItem.text.length>600?'…':''}`;
+    cfg.questionEl.value = txtItem.text.slice(0,6000);
+    return;
+  }
+  const pendingPdf = cfg.uploads.find(u=>u.isPdf && !u.text && !u.pdfError);
+  if(pendingPdf){ box.textContent = 'Still extracting text from the PDF — try again in a moment.'; return; }
+  box.textContent = 'No readable text found yet. Please paste the question text or upload a screenshot image instead.';
+}
+
+/**
+ * Shared by the "Solve" flow: if the question box is empty but a file is
+ * attached, derive question text from it automatically (OCR for images,
+ * extracted text for PDF/TXT) instead of requiring the user to press
+ * "Re-read carefully" first. Throws a user-facing Error if nothing usable
+ * is available yet.
+ */
+async function deriveQuestionFromUploads(cfg){
+  if(!cfg || !cfg.uploads || !cfg.uploads.length) return '';
+  const imgItem = cfg.uploads.find(u=>u.dataUrl);
+  if(imgItem){
+    try{
+      return await ocrImageWithClaude(imgItem.dataUrl, imgItem.type);
+    }catch(err){
+      throw new Error('Could not read the attached image (' + err.message + ').');
+    }
+  }
+  const txtItem = cfg.uploads.find(u=>u.text);
+  if(txtItem) return txtItem.text.slice(0,6000);
+  const pendingPdf = cfg.uploads.find(u=>u.isPdf && !u.text && !u.pdfError);
+  if(pendingPdf) throw new Error('Still extracting text from the PDF — wait a moment and press Solve again.');
+  const failedPdf = cfg.uploads.find(u=>u.isPdf && u.pdfError);
+  if(failedPdf) throw new Error(failedPdf.pdfError);
+  return '';
+}
+window.deriveQuestionFromUploads = deriveQuestionFromUploads;
+
+
+/* dashboard instance */
+uploaderRegistry['dashboard'] = wireUploader({
+  key:'dashboard', uploads: currentUploads,
+  zoneEl: $('#uploadZone'), inputEl: $('#fileInput'), listEl: $('#uploadList'),
+  ocrEl: $('#ocrBox'), questionEl: $('#qInput'), rereadBtnEl: $('#rereadBtn')
+});
+// keep currentUploads pointing at the same array reference used by the registry
+Object.defineProperty(window, '_dashboardUploadsSync', {value:true});
+
+async function ocrImageWithClaude(dataUrl, mime){
+  return 'Image recognition is not available in offline mode. Please type the question text manually into the question box above.';
+}
+
+/* =========================================================================
+   8. CLAUDE API BRIDGE (standalone — uses your own API key, called directly
+      from this browser tab, no server/proxy involved)
+   ========================================================================= */
+async function callClaude({system, messages, signal, max_tokens}){
+  const apiKey = getApiKey();
+  const headers = {"Content-Type":"application/json"};
+  if(apiKey){
+    // Your own saved key — required when this file is hosted/opened outside
+    // Claude.ai's own chat/preview panel (costs your own API credits).
+    headers["x-api-key"] = apiKey;
+    headers["anthropic-version"] = "2023-06-01";
+    headers["anthropic-dangerous-direct-browser-access"] = "true";
+  }
+  // With no saved key, this fetch is relayed by Claude's preview sandbox at no
+  // cost to you — it only works while viewing this file inside Claude's own
+  // preview panel, not when hosted on your own domain or opened as a
+  // standalone downloaded file.
+  let response;
+  try{
+    response = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers,
+      signal,
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: max_tokens || 4096,
+        system,
+        messages
+      })
+    });
+  }catch(networkErr){
+    if(networkErr.name === 'AbortError') throw networkErr;
+    console.error('callClaude network error', networkErr);
+    throw new Error(apiKey
+      ? 'Network/connection issue reaching the model. Check your internet connection.'
+      : 'No API key is saved, and the free relay only works inside Claude.ai\'s own preview panel. Click "Add API key" in the top bar and add your own Anthropic key to use this on your hosted site.');
+  }
+  if(signal && signal.aborted){
+    const abortErr = new Error('Generation stopped');
+    abortErr.name = 'AbortError';
+    throw abortErr;
+  }
+  if(!response.ok){
+    let detail = '';
+    try{ const errBody = await response.json(); detail = errBody?.error?.message || ''; }catch(e){}
+    console.error('callClaude API error', response.status, detail);
+    throw new Error('API error '+response.status+(detail?': '+detail:''));
+  }
+  const data = await response.json();
+  const textBlock = (data.content||[]).find(b=>b.type==='text');
+  if(!textBlock || !textBlock.text) throw new Error('Empty response from model');
+  return textBlock.text;
+}
+function extractJson(text){
+  // strip markdown code fences if present
+  let cleaned = text.trim().replace(/^```(json)?/i,'').replace(/```$/,'').trim();
+  const start = cleaned.indexOf('{');
+  if(start===-1){ console.error('extractJson: no { found in', cleaned); throw new Error('No JSON found in response'); }
+  // balanced-brace scan so truncated/nested content doesn't break parsing
+  let depth = 0, end = -1;
+  for(let i=start;i<cleaned.length;i++){
+    if(cleaned[i]==='{') depth++;
+    else if(cleaned[i]==='}'){ depth--; if(depth===0){ end=i; break; } }
+  }
+  if(end===-1){ console.error('extractJson: unbalanced JSON, likely truncated', cleaned); throw new Error('Response was cut off — try a shorter question or try again'); }
+  const jsonStr = cleaned.slice(start, end+1);
+  try{
+    return JSON.parse(jsonStr);
+  }catch(parseErr){
+    console.error('extractJson: JSON.parse failed', parseErr, jsonStr);
+    throw new Error('Could not parse the model response');
+  }
+}
+
+/* =========================================================================
+   9. SOLVER
+   ========================================================================= */
+$('#solveBtn').addEventListener('click', ()=>{
+  solveQuestionGeneric({
+    questionEl: $('#qInput'),
+    jurisdiction: $('#jurisdiction').value,
+    weekScope: $('#weekScope').value,
+    outputEl: $('#solutionWrap'),
+    btnEl: $('#solveBtn'),
+    uploaderKey: 'dashboard',
+    btnDefaultHtml: `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg> Solve question`
+  });
+});
+
+/**
+ * Generic solve flow reused by the dashboard solver and each weekly portfolio's
+ * own question solver. Renders a full step-by-step solution card into outputEl.
+ */
+async function solveQuestionGeneric({questionEl, jurisdiction, weekScope, outputEl, btnEl, btnDefaultHtml, uploaderKey}){
+  let question = questionEl.value.trim();
+  const cfg = uploaderKey ? uploaderRegistry[uploaderKey] : null;
+
+  // If nothing was typed but a file is attached, auto-derive the question
+  // from it (OCR for images, extracted text for PDF/TXT) instead of forcing
+  // the user to press "Re-read carefully" first.
+  if(!question && cfg && cfg.uploads && cfg.uploads.length){
+    btnEl.disabled = true; btnEl.innerHTML = 'Reading attachment…';
+    outputEl.classList.remove('hidden');
+    outputEl.innerHTML = `<div class="card card-pad" style="text-align:center;color:var(--text-500);">
+      <div class="typing-dots" style="justify-content:center;"><span></span><span></span><span></span></div>
+      Reading the attached file…
+    </div>`;
+    try{
+      const derived = await deriveQuestionFromUploads(cfg);
+      if(derived){ question = derived; questionEl.value = derived; }
+    }catch(err){
+      btnEl.disabled = false; btnEl.innerHTML = btnDefaultHtml;
+      outputEl.innerHTML = `<div class="card card-pad" style="color:var(--danger-fg);"><b>Couldn't read the attached file.</b><br>${escapeHtml(err.message)}</div>`;
+      return;
+    }
+  }
+
+  if(!question){ toast('Type or attach a question first'); outputEl.classList.add('hidden'); return; }
+  jurisdiction = jurisdiction || 'auto';
+  weekScope = weekScope || 'auto';
+
+  btnEl.disabled = true; btnEl.innerHTML = 'Solving…';
+  outputEl.classList.remove('hidden');
+  outputEl.innerHTML = `<div class="card card-pad" style="text-align:center;color:var(--text-500);">
+    <div class="typing-dots" style="justify-content:center;"><span></span><span></span><span></span></div>
+    Working through the calculation…
+  </div>`;
+  outputEl.scrollIntoView({behavior:'smooth', block:'start'});
+
+  const sys = buildSolverSystemPrompt(jurisdiction, weekScope);
+  try{
+    const raw = await callClaude({system: sys, messages:[{role:'user', content: question}], max_tokens: 4096});
+    const sol = extractJson(raw);
+    currentSolutionCtx = {question, jurisdiction, weekScope, solution: sol};
+    renderSolution(sol, question, outputEl);
+    bumpQACounter();
+  }catch(err){
+    outputEl.innerHTML = `<div class="card card-pad" style="color:var(--danger-fg);">
+      <b>Couldn't generate a solution.</b><br>${escapeHtml(err.message)}<br>
+      <span style="font-size:12px;color:var(--text-500);">Check your connection, simplify the question, or try again in a moment.</span>
+    </div>`;
+  } finally {
+    btnEl.disabled = false;
+    btnEl.innerHTML = btnDefaultHtml;
+  }
+}
+function buildSolverSystemPrompt(jurisdiction, weekScope){
+  return `You are the engineering solver embedded in a university timber/structural engineering course platform (BET 402, Melbourne Polytechnic, AS 1720.1-based).
+Rules:
+- Never invent specific characteristic strength (f't, f'c, f'b, f's) or E/G values for a species/grade unless the user's question explicitly states them, or they are extremely well-known nominal AS1720 MGP/F-grade table values — if you use a table value, say clearly which table/clause it is from and flag it as "typical published value, verify against current AS 1720.1 tables".
+- If information is missing, state the assumption explicitly rather than silently filling it in.
+- Jurisdiction context: "${jurisdiction}". If not Australia, note that formulas shown follow AS 1720.1 conventions but the user should confirm against their local code (Eurocode EN 1995, NDS for the US, NZS 3603 for NZ, CSA O86 for Canada) since exact factors differ.
+- Course scope: "${weekScope}". Weeks: 1=material properties, 2=loads/beams, 3=tension members, 4=compression members, 5=spaced/composite columns. If the question is outside these five topics, still solve it but mark it as "global" scope, not course-verified.
+- Respond in beginner-friendly language in the "beginnerExplanation" field, plain engineering language elsewhere.
+
+Return ONLY a single JSON object (no markdown fences, no prose outside it) with this exact shape:
+{
+ "week": "1|2|3|4|5|global",
+ "topic": "short topic label",
+ "interpretation": "one paragraph restating what is being asked",
+ "given": [{"label":"...", "value":"... (with units)"}],
+ "assumptions": ["..."],
+ "standard": "e.g. AS 1720.1:2010 Cl. 3.x",
+ "formulas": [{"name":"...", "expression":"..."}],
+ "steps": [{"title":"...", "detail":"... (plain text, may include formula substitution lines separated by \\n)"}],
+ "unitChecks": ["..."],
+ "evidence": [{"source":"table/clause name", "note":"why this value was used"}],
+ "result": {"value":"...", "unit":"..."},
+ "status": "PASS|FAIL|WARNING",
+ "statusReason": "short reason for the status",
+ "alternatives": ["optional alternative scenarios, or empty array"],
+ "references": ["standard/clause citations"],
+ "beginnerExplanation": "plain-language explanation of the whole problem",
+ "sourceType": "course|general"
+}`;
+}
+function bumpQACounter(){
+  const el = $('#statQACount');
+  el.textContent = (parseInt(el.textContent||'0')+1);
+}
+
+function renderSolution(sol, questionText, targetEl){
+  const statusClass = sol.status==='PASS' ? 'status-pass' : sol.status==='FAIL' ? 'status-fail' : 'status-warn';
+  const statusIcon = sol.status==='PASS' ? '✓' : sol.status==='FAIL' ? '✕' : '⚠';
+  const wrap = targetEl || $('#solutionWrap');
+  const solId = uid();
+  wrap.dataset.solId = solId;
+  wrap.innerHTML = `
+    <div class="card card-pad">
+      <div class="sol-head">
+        <div>
+          <div class="eyebrow">${sol.sourceType==='course' ? 'Course-supported answer' : 'General engineering answer (beyond course scope)'} · Week ${escapeHtml(sol.week)}</div>
+          <h3 style="font-size:18px;">${escapeHtml(sol.topic||'Solution')}</h3>
+        </div>
+        <span class="status-badge ${statusClass}">${statusIcon} ${escapeHtml(sol.status)}</span>
+      </div>
+
+      ${stepBlock(1,'Question interpretation', `<p>${escapeHtml(sol.interpretation)}</p>`)}
+      ${stepBlock(2,'Given values', givenTable(sol.given))}
+      ${stepBlock(3,'Assumptions', `<ul>${(sol.assumptions||[]).map(a=>`<li>${escapeHtml(a)}</li>`).join('')||'<li>None required — fully defined by the question.</li>'}</ul>`)}
+      ${stepBlock(4,'Relevant standard / code', `<p class="mono" style="font-size:13px;">${escapeHtml(sol.standard||'—')}</p>`)}
+      ${stepBlock(5,'Required formulas', formulaBlock(sol.formulas))}
+      ${stepBlock(6,'Step-by-step calculation', stepsBlock(sol.steps), true)}
+      ${stepBlock(7,'Unit checks', `<ul>${(sol.unitChecks||[]).map(u=>`<li>${escapeHtml(u)}</li>`).join('')||'<li>Units consistent throughout (SI).</li>'}</ul>`)}
+      ${stepBlock(8,'Lookup / table evidence', evidenceBlock(sol.evidence))}
+      ${stepBlock(9,'Final result', `<div class="given-table"><table class="given-table"><tr><td>Result</td><td>${escapeHtml(sol.result?.value)} ${escapeHtml(sol.result?.unit||'')}</td></tr><tr><td>Conclusion</td><td>${escapeHtml(sol.statusReason||'')}</td></tr></table></div>`)}
+      ${sol.alternatives && sol.alternatives.length ? stepBlock(10,'Alternative scenarios', `<ul>${sol.alternatives.map(a=>`<li>${escapeHtml(a)}</li>`).join('')}</ul>`) : ''}
+      ${stepBlock(11,'Sources / references', `<div class="tag-row">${(sol.references||[]).map(r=>`<span class="tag">${escapeHtml(r)}</span>`).join('')||'<span class="tag">—</span>'}</div>`)}
+
+      <div class="beginner-box" style="margin-top:6px;">
+        <b>Beginner-friendly explanation</b><br>${escapeHtml(sol.beginnerExplanation||'')}
+      </div>
+
+      <div class="sol-footer-actions">
+        <button class="btn btn-primary btn-sm" onclick="saveSolution('${solId}')"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>Save solution</button>
+        <button class="btn btn-sm" id="${solId}_pdfBtn" onclick="downloadSolutionPdf('${solId}')"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>Download as PDF</button>
+        <button class="btn btn-sm" onclick="askTutorAboutSolution()"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 014 4c0 1.5-.8 2.8-2 3.5V12h-4V9.5C8.8 8.8 8 7.5 8 6a4 4 0 014-4z"/></svg>Ask the tutor</button>
+      </div>
+    </div>
+  `;
+  window[solId+'_question'] = questionText;
+  window[solId+'_data'] = sol;
+  $$('.step-head', wrap).forEach(h=>{
+    h.addEventListener('click', ()=> h.closest('.step').classList.toggle('open'));
+  });
+}
+function stepBlock(n,title,bodyHtml, openDefault){
+  return `<div class="step ${openDefault?'open':''}">
+    <div class="step-head"><span class="step-num">${n}</span><span class="step-title">${title}</span>
+      <svg class="step-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="step-body">${bodyHtml}</div>
+  </div>`;
+}
+function givenTable(given){
+  if(!given || !given.length) return '<p>No explicit values given — see assumptions.</p>';
+  return `<table class="given-table">${given.map(g=>`<tr><td>${escapeHtml(g.label)}</td><td>${escapeHtml(g.value)}</td></tr>`).join('')}</table>`;
+}
+function formulaBlock(formulas){
+  if(!formulas || !formulas.length) return '<p>—</p>';
+  return formulas.map(f=>`<div class="formula-box"><span class="cy">${escapeHtml(f.name)}</span>\n${escapeHtml(f.expression)}</div>`).join('');
+}
+function stepsBlock(steps){
+  if(!steps || !steps.length) return '<p>—</p>';
+  return steps.map((s,i)=>`<p style="margin-bottom:10px;"><b>${i+1}. ${escapeHtml(s.title)}</b><br>${escapeHtml(s.detail).replace(/\n/g,'<br>')}</p>`).join('');
+}
+function evidenceBlock(evidence){
+  if(!evidence || !evidence.length) return '<p>No table lookups required for this question.</p>';
+  return evidence.map(e=>`<div class="evidence-card"><div class="ev-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M3 13l4-4 4 3 6-6 4 4"/></svg></div><div><b style="font-size:12.8px;">${escapeHtml(e.source)}</b><div style="font-size:12px;color:var(--text-500);margin-top:2px;">${escapeHtml(e.note)}</div></div></div>`).join('');
+}
+
+/* save / print */
+function saveSolution(solId){
+  const sol = window[solId+'_data'];
+  const question = window[solId+'_question'];
+  if(!sol) return;
+  savedSolutions.unshift({
+    id: uid(), question, week: sol.week, topic: sol.topic, status: sol.status,
+    date: new Date().toISOString(), data: sol
+  });
+  store('tses_saved', savedSolutions);
+  renderSavedList();
+  renderStats();
+  toast('Solution saved');
+}
+window.saveSolution = saveSolution;
+/**
+ * Builds a clean, print-ready HTML document for a solution, in the same
+ * numbered order as the on-screen solution card, with every section expanded
+ * (no collapsed accordions) — used for the downloadable PDF.
+ */
+function buildSolutionPrintHtml(sol, question){
+  const statusColor = sol.status==='PASS' ? '#0d7a53' : sol.status==='FAIL' ? '#b3261e' : '#95610a';
+  const statusBg = sol.status==='PASS' ? '#eafaf3' : sol.status==='FAIL' ? '#fdeeee' : '#fff7e6';
+  const sec = (n,title,html)=>`
+    <div style="margin-bottom:16px;break-inside:avoid;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#0891b2;margin-bottom:5px;">Step ${n} — ${escapeHtml(title)}</div>
+      <div style="font-size:13px;line-height:1.55;color:#1a2332;">${html}</div>
+    </div>`;
+  return `
+  <div style="font-family:Arial,Helvetica,sans-serif;color:#0f1b2d;padding:6px 4px;max-width:760px;">
+    <div style="border-bottom:2px solid #0891b2;padding-bottom:12px;margin-bottom:16px;">
+      <div style="font-size:11px;color:#0891b2;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">
+        ${sol.sourceType==='course' ? 'Course-supported answer' : 'General engineering answer (beyond course scope)'} · Week ${escapeHtml(sol.week)}
+      </div>
+      <h1 style="font-size:19px;margin:4px 0 8px;">${escapeHtml(sol.topic||'Solution')}</h1>
+      <div style="font-size:12.5px;color:#33415a;"><b>Question:</b> ${escapeHtml(question||'')}</div>
+      <span style="display:inline-block;margin-top:8px;font-weight:700;font-size:12px;padding:4px 10px;border-radius:6px;background:${statusBg};color:${statusColor};">${escapeHtml(sol.status)}</span>
+    </div>
+    ${sec(1,'Question interpretation', `<p>${escapeHtml(sol.interpretation||'')}</p>`)}
+    ${sec(2,'Given values', givenTable(sol.given))}
+    ${sec(3,'Assumptions', `<ul style="margin:0;padding-left:18px;">${(sol.assumptions||[]).map(a=>`<li>${escapeHtml(a)}</li>`).join('')||'<li>None required — fully defined by the question.</li>'}</ul>`)}
+    ${sec(4,'Relevant standard / code', `<p style="font-family:monospace;">${escapeHtml(sol.standard||'—')}</p>`)}
+    ${sec(5,'Required formulas', formulaBlock(sol.formulas))}
+    ${sec(6,'Step-by-step calculation', stepsBlock(sol.steps))}
+    ${sec(7,'Unit checks', `<ul style="margin:0;padding-left:18px;">${(sol.unitChecks||[]).map(u=>`<li>${escapeHtml(u)}</li>`).join('')||'<li>Units consistent throughout (SI).</li>'}</ul>`)}
+    ${sec(8,'Lookup / table evidence', evidenceBlock(sol.evidence))}
+    ${sec(9,'Final result', `<table style="width:100%;border-collapse:collapse;"><tr><td style="padding:5px 8px;border-bottom:1px solid #ddd;width:120px;">Result</td><td style="padding:5px 8px;border-bottom:1px solid #ddd;font-weight:700;">${escapeHtml(sol.result?.value)} ${escapeHtml(sol.result?.unit||'')}</td></tr><tr><td style="padding:5px 8px;">Conclusion</td><td style="padding:5px 8px;">${escapeHtml(sol.statusReason||'')}</td></tr></table>`)}
+    ${sol.alternatives && sol.alternatives.length ? sec(10,'Alternative scenarios', `<ul style="margin:0;padding-left:18px;">${sol.alternatives.map(a=>`<li>${escapeHtml(a)}</li>`).join('')}</ul>`) : ''}
+    ${sec(11,'Sources / references', `<p>${(sol.references||[]).map(r=>escapeHtml(r)).join(' · ')||'—'}</p>`)}
+    <div style="margin-top:14px;padding:12px 14px;background:#eafaf3;border-radius:8px;font-size:12.5px;">
+      <b>Beginner-friendly explanation</b><br>${escapeHtml(sol.beginnerExplanation||'')}
+    </div>
+    <hr style="margin-top:22px;border:none;border-top:1px solid #e2e8f0;">
+    <p style="font-size:10.5px;color:#93a0b3;margin-top:8px;">BET 402 — Design of Timber Structures · Generated ${new Date().toLocaleString()} · For educational use only</p>
+  </div>`;
+}
+async function downloadSolutionPdf(solId){
+  const sol = window[solId+'_data'];
+  const question = window[solId+'_question'];
+  if(!sol){ toast('Nothing to export yet'); return; }
+  const btn = document.getElementById(solId+'_pdfBtn');
+  const prevHtml = btn ? btn.innerHTML : null;
+  if(btn){ btn.disabled = true; btn.innerHTML = 'Preparing PDF…'; }
+  let container = null;
+  try{
+    container = document.createElement('div');
+    container.style.position='fixed'; container.style.left='-9999px'; container.style.top='0';
+    container.style.background='#fff';
+    container.innerHTML = buildSolutionPrintHtml(sol, question);
+    document.body.appendChild(container);
+    const filename = `Week${sol.week}-${(sol.topic||'solution').replace(/[^a-z0-9]+/gi,'-').slice(0,40)}.pdf`;
+
+    if(window.__html2pdfFailed || !window.html2pdf){
+      // Library never loaded (e.g. CDN blocked/offline/CSP) — go straight to the reliable fallback.
+      throw new Error('PDF engine unavailable (html2pdf failed to load — likely blocked by network/CSP)');
+    }
+
+    const genPromise = window.html2pdf().set({
+      margin:[12,12,14,12],
+      filename,
+      image:{type:'jpeg', quality:0.98},
+      html2canvas:{scale:2, useCORS:true},
+      jsPDF:{unit:'mm', format:'a4', orientation:'portrait'},
+      pagebreak:{mode:['css','avoid-all']}
+    }).from(container).save();
+    const timeoutPromise = new Promise((_, reject)=> setTimeout(()=> reject(new Error('PDF generation timed out')), 12000));
+    await Promise.race([genPromise, timeoutPromise]);
+    toast('PDF downloaded');
+  }catch(err){
+    console.error('downloadSolutionPdf failed, falling back to print dialog:', err);
+    toast('Direct PDF export unavailable — opening print dialog instead (choose "Save as PDF")');
+    printSolutionFallback(sol, question);
+  } finally {
+    if(container && container.parentNode) document.body.removeChild(container);
+    if(btn){ btn.disabled = false; btn.innerHTML = prevHtml; }
+  }
+}
+window.downloadSolutionPdf = downloadSolutionPdf;
+
+function printSolutionFallback(sol, question){
+  try{
+    let exportRoot = document.getElementById('__pdfExportRoot');
+    if(!exportRoot){
+      exportRoot = document.createElement('div');
+      exportRoot.id = '__pdfExportRoot';
+      document.body.appendChild(exportRoot);
+    }
+    exportRoot.innerHTML = buildSolutionPrintHtml(sol, question);
+
+    const cleanup = () => { document.body.classList.remove('printing-export'); };
+    window.addEventListener('afterprint', cleanup, {once:true});
+    // Safety net in case afterprint never fires (some mobile browsers skip it)
+    setTimeout(cleanup, 8000);
+
+    document.body.classList.add('printing-export');
+    // Small delay so the browser commits the layout change before the print dialog opens
+    setTimeout(()=>{
+      try{ window.print(); }
+      catch(e){
+        console.error('window.print() failed:', e);
+        toast("Your browser blocked printing too — try Ctrl/Cmd+P manually, or take a screenshot");
+        cleanup();
+      }
+    }, 60);
+  }catch(err){
+    console.error('printSolutionFallback failed entirely:', err);
+    toast("PDF export failed completely — see browser console (F12) for the error");
+  }
+}
+/* kept for any legacy calls */
+function printSolution(solId){
+  const sol = window[solId+'_data'];
+  const question = window[solId+'_question'];
+  if(!sol){ window.print(); return; }
+  printSolutionFallback(sol, question);
+}
+window.printSolution = printSolution;
+
+/* =========================================================================
+   10. BROWSE ANSWERS
+   ========================================================================= */
+function allQuestionsFlat(){
+  let out = [];
+  for(let w=1; w<=5; w++) allQuestionsForWeek(w).forEach(q=>out.push({...q, week:w}));
+  return out;
+}
+function renderBrowse(){
+  const search = $('#browseSearch').value.toLowerCase();
+  const weekF = $('#browseWeek').value;
+  const topicF = $('#browseTopic').value;
+  let items = allQuestionsFlat();
+  const topics = [...new Set(items.map(i=>i.topic).filter(Boolean))];
+  $('#browseTopic').innerHTML = `<option value="all">All topics</option>` + topics.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+  $('#browseTopic').value = topicF;
+
+  items = items.filter(i=>{
+    const matchesSearch = !search || (i.q.toLowerCase().includes(search) || (i.topic||'').toLowerCase().includes(search) || i.a.toLowerCase().includes(search));
+    const matchesWeek = weekF==='all' || String(i.week)===weekF;
+    const matchesTopic = topicF==='all' || i.topic===topicF;
+    return matchesSearch && matchesWeek && matchesTopic;
+  });
+
+  const wrap = $('#browseResults');
+  if(!items.length){
+    wrap.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><div>No questions match your search.</div></div>`;
+    return;
+  }
+  wrap.innerHTML = items.map(q=>`
+    <div class="qa-card" onclick="openQAModal('${q.id}', ${q.week})">
+      <div class="qhead"><div class="qtext">${escapeHtml(q.q)}</div><span class="badge badge-cyan">Week ${q.week}</span></div>
+      <div class="qmeta"><span class="badge">${escapeHtml(q.topic||'General')}</span></div>
+    </div>
+  `).join('');
+}
+['browseSearch','browseWeek','browseTopic'].forEach(id=>{
+  document.addEventListener('input', e=>{ if(e.target.id===id) renderBrowse(); });
+  document.addEventListener('change', e=>{ if(e.target.id===id) renderBrowse(); });
+});
+renderBrowse();
+
+/* =========================================================================
+   11. MANUAL CHECK — real deterministic calculators
+   ========================================================================= */
+const CALCS = [
+  {id:'section', label:'Section properties', fields:[
+    {id:'b', label:'Width b (mm)'}, {id:'d', label:'Depth d (mm)'}
+  ], compute:(v)=>{
+    const A = v.b*v.d, I = v.b*Math.pow(v.d,3)/12, Z = v.b*Math.pow(v.d,2)/6, r = Math.sqrt(I/A);
+    return [ {label:'Area A', val:A.toFixed(0), unit:'mm²'}, {label:'Second moment I', val:I.toFixed(0), unit:'mm⁴'}, {label:'Section modulus Z', val:Z.toFixed(0), unit:'mm³'}, {label:'Radius of gyration r', val:r.toFixed(2), unit:'mm'} ];
+  }},
+  {id:'tension', label:'Tension', fields:[
+    {id:'ft', label:"f't (MPa)"},{id:'An', label:'Net area A_n (mm²)'},{id:'k1', label:'k1 (load duration)', def:1},{id:'phi', label:'φ (capacity factor)', def:0.85},{id:'Nstar', label:'Design load N* (kN)'}
+  ], compute:(v)=>{
+    const cap = v.phi*v.k1*v.ft*v.An/1000;
+    const pass = cap >= v.Nstar;
+    return [ {label:'φ·Nt (capacity)', val:cap.toFixed(2), unit:'kN'}, {label:'N* (applied)', val:v.Nstar.toFixed(2), unit:'kN'}, {label:'Utilisation', val:(v.Nstar/cap*100).toFixed(0), unit:'%'}, {label:'Result', val: pass?'PASS':'FAIL', unit:''} ];
+  }},
+  {id:'compression', label:'Compression', fields:[
+    {id:'fc', label:"f'c (MPa)"},{id:'A', label:'Area A (mm²)'},{id:'k1', label:'k1', def:1},{id:'k12', label:'k12 (stability)', def:1},{id:'phi', label:'φ', def:0.85},{id:'Nstar', label:'Design load N* (kN)'}
+  ], compute:(v)=>{
+    const cap = v.phi*v.k1*v.k12*v.fc*v.A/1000;
+    const pass = cap >= v.Nstar;
+    return [ {label:'φ·Nc (capacity)', val:cap.toFixed(2), unit:'kN'}, {label:'N* (applied)', val:v.Nstar.toFixed(2), unit:'kN'}, {label:'Utilisation', val:(v.Nstar/cap*100).toFixed(0), unit:'%'}, {label:'Result', val: pass?'PASS':'FAIL', unit:''} ];
+  }},
+  {id:'bending', label:'Bending', fields:[
+    {id:'fb', label:"f'b (MPa)"},{id:'Z', label:'Section modulus Z (mm³)'},{id:'k1', label:'k1', def:1},{id:'phi', label:'φ', def:0.85},{id:'Mstar', label:'Design moment M* (kN·m)'}
+  ], compute:(v)=>{
+    const cap = v.phi*v.k1*v.fb*v.Z/1e6;
+    const pass = cap >= v.Mstar;
+    return [ {label:'φ·Md (capacity)', val:cap.toFixed(2), unit:'kN·m'}, {label:'M* (applied)', val:v.Mstar.toFixed(2), unit:'kN·m'}, {label:'Utilisation', val:(v.Mstar/cap*100).toFixed(0), unit:'%'}, {label:'Result', val: pass?'PASS':'FAIL', unit:''} ];
+  }},
+  {id:'shear', label:'Shear', fields:[
+    {id:'fs', label:"f's (MPa)"},{id:'A', label:'Area A (mm²)'},{id:'k1', label:'k1', def:1},{id:'phi', label:'φ', def:0.85},{id:'Vstar', label:'Design shear V* (kN)'}
+  ], compute:(v)=>{
+    const cap = v.phi*v.k1*v.fs*(2/3)*v.A/1000;
+    const pass = cap >= v.Vstar;
+    return [ {label:'φ·Vd (capacity)', val:cap.toFixed(2), unit:'kN'}, {label:'V* (applied)', val:v.Vstar.toFixed(2), unit:'kN'}, {label:'Utilisation', val:(v.Vstar/cap*100).toFixed(0), unit:'%'}, {label:'Result', val: pass?'PASS':'FAIL', unit:''} ];
+  }},
+  {id:'deflection', label:'Deflection', fields:[
+    {id:'w', label:'UDL w (kN/m)'},{id:'L', label:'Span L (m)'},{id:'E', label:'E (MPa)'},{id:'I', label:'I (mm⁴)'},{id:'limit', label:'Limit = span / n (enter n)', def:300}
+  ], compute:(v)=>{
+    const w_Npermm = v.w; // kN/m == N/mm
+    const L_mm = v.L*1000;
+    const defl = 5*w_Npermm*Math.pow(L_mm,4)/(384*v.E*v.I);
+    const limitVal = L_mm/v.limit;
+    const pass = defl <= limitVal;
+    return [ {label:'Calculated deflection δ', val:defl.toFixed(2), unit:'mm'}, {label:'Allowable (span/'+v.limit+')', val:limitVal.toFixed(2), unit:'mm'}, {label:'Result', val: pass?'PASS':'FAIL', unit:''} ];
+  }},
+  {id:'axial', label:'Axial deformation', fields:[
+    {id:'P', label:'Axial load P (kN)'},{id:'L', label:'Length L (mm)'},{id:'A', label:'Area A (mm²)'},{id:'E', label:'E (MPa)'}
+  ], compute:(v)=>{
+    const defl = (v.P*1000*v.L)/(v.A*v.E);
+    return [ {label:'Axial deformation δ', val:defl.toFixed(3), unit:'mm'} ];
+  }},
+  {id:'stability', label:'Column stability', fields:[
+    {id:'Le', label:'Effective length Le (mm)'},{id:'d', label:'Least dimension d (mm)'}
+  ], compute:(v)=>{
+    const S = v.Le/v.d;
+    let note = S<10?'Short column — material strength governs.':(S<25?'Intermediate — stability factor k12 will reduce capacity.':'Slender — buckling governs, k12 significantly < 1.');
+    return [ {label:'Slenderness S', val:S.toFixed(2), unit:''}, {label:'Behaviour', val:note, unit:''} ];
+  }},
+  {id:'composite', label:'Composite / spaced member', fields:[
+    {id:'fc', label:"f'c (MPa)"},{id:'Ai', label:'Area per member A_i (mm²)'},{id:'n', label:'Number of members n'},{id:'k12', label:'k12 (stability)', def:1},{id:'phi', label:'φ', def:0.85},{id:'Nstar', label:'Design load N* (kN)'}
+  ], compute:(v)=>{
+    const cap = v.phi*v.k12*v.fc*(v.n*v.Ai)/1000;
+    const pass = cap >= v.Nstar;
+    return [ {label:'φ·Nc (composite capacity)', val:cap.toFixed(2), unit:'kN'}, {label:'N* (applied)', val:v.Nstar.toFixed(2), unit:'kN'}, {label:'Utilisation', val:(v.Nstar/cap*100).toFixed(0), unit:'%'}, {label:'Result', val: pass?'PASS':'FAIL', unit:''} ];
+  }}
+];
+function renderCalcTabs(){
+  $('#calcTabs').innerHTML = CALCS.map((c,i)=>`<button class="calc-tab ${i===0?'active':''}" data-calc="${c.id}">${c.label}</button>`).join('');
+  $('#calcBodies').innerHTML = CALCS.map((c,i)=>`
+    <div class="calc-body ${i===0?'active':''}" id="calcbody-${c.id}">
+      <div class="card card-pad">
+        <h4 style="font-size:14px;margin-bottom:12px;">${c.label} — inputs</h4>
+        ${c.fields.map(f=>`<div class="form-row"><label>${f.label}</label><input type="number" step="any" id="in-${c.id}-${f.id}" value="${f.def!==undefined?f.def:''}"></div>`).join('')}
+        <button class="btn btn-primary btn-sm" onclick="runCalc('${c.id}')">Calculate</button>
+      </div>
+      <div class="result-panel" id="result-${c.id}">
+        <div style="color:var(--text-400);font-size:13px;">Results will appear here once you calculate.</div>
+      </div>
+    </div>
+  `).join('');
+  $$('.calc-tab').forEach(tab=>tab.addEventListener('click', ()=>{
+    $$('.calc-tab').forEach(t=>t.classList.remove('active'));
+    $$('.calc-body').forEach(b=>b.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('calcbody-'+tab.dataset.calc).classList.add('active');
+  }));
+}
+function runCalc(id){
+  const calc = CALCS.find(c=>c.id===id);
+  const values = {};
+  let valid = true;
+  calc.fields.forEach(f=>{
+    const raw = document.getElementById('in-'+id+'-'+f.id).value;
+    const num = parseFloat(raw);
+    if(isNaN(num)) valid = false;
+    values[f.id] = num;
+  });
+  const resultPanel = document.getElementById('result-'+id);
+  if(!valid){ resultPanel.innerHTML = `<div style="color:var(--danger-fg);font-size:13px;">Please fill in all fields with numeric values.</div>`; return; }
+  const results = calc.compute(values);
+  resultPanel.innerHTML = results.map(r=>{
+    const isResult = r.label==='Result';
+    const cls = isResult ? (r.val==='PASS'?'status-pass':'status-fail') : '';
+    return `<div class="result-line"><span class="rl-label">${r.label}</span><span class="rl-val ${isResult?'status-badge '+cls:''}" style="${isResult?'padding:4px 10px;border-radius:8px;':''}">${r.val} ${r.unit}</span></div>`;
+  }).join('');
+}
+window.runCalc = runCalc;
+renderCalcTabs();
+
+/* =========================================================================
+   12. SAVED SOLUTIONS
+   ========================================================================= */
+function renderSavedList(){
+  const search = ($('#savedSearch')?.value || '').toLowerCase();
+  const weekF = $('#savedWeekFilter')?.value || 'all';
+  let items = savedSolutions.filter(s=>{
+    const matchSearch = !search || s.question.toLowerCase().includes(search) || (s.topic||'').toLowerCase().includes(search);
+    const matchWeek = weekF==='all' || String(s.week)===weekF;
+    return matchSearch && matchWeek;
+  });
+  const wrap = $('#savedList');
+  if(!items.length){
+    wrap.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg><div>No saved solutions yet — solve a question and save it to build your library.</div></div>`;
+    return;
+  }
+  wrap.innerHTML = items.map(s=>`
+    <div class="saved-card">
+      <div style="min-width:0;">
+        <div class="stitle">${escapeHtml(s.topic || s.question.slice(0,60))}</div>
+        <div class="smeta">Week ${escapeHtml(String(s.week))} · ${new Date(s.date).toLocaleDateString()} · <span class="badge ${s.status==='PASS'?'badge-cyan':''}">${escapeHtml(s.status)}</span></div>
+      </div>
+      <div class="saved-actions">
+        <button class="btn btn-sm" onclick="openSavedModal('${s.id}')">Open</button>
+        <button class="btn btn-sm" onclick="downloadSavedPdf('${s.id}')">PDF</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteSaved('${s.id}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+function openSavedModal(id){
+  const s = savedSolutions.find(x=>x.id===id);
+  if(!s) return;
+  $('#modalTitle').textContent = s.topic;
+  const sol = s.data;
+  $('#modalBody').innerHTML = `
+    <p style="margin-bottom:10px;font-size:13.5px;"><b>Question:</b> ${escapeHtml(s.question)}</p>
+    <table class="given-table" style="margin-bottom:12px;">${(sol.given||[]).map(g=>`<tr><td>${escapeHtml(g.label)}</td><td>${escapeHtml(g.value)}</td></tr>`).join('')}</table>
+    <div class="beginner-box" style="margin-bottom:12px;">${escapeHtml(sol.beginnerExplanation||'')}</div>
+    <p><b>Result:</b> ${escapeHtml(sol.result?.value)} ${escapeHtml(sol.result?.unit||'')} — <span class="badge ${sol.status==='PASS'?'badge-cyan':''}">${escapeHtml(sol.status)}</span></p>
+  `;
+  $('#modalBackdrop').classList.add('open');
+}
+window.openSavedModal = openSavedModal;
+function deleteSaved(id){
+  if(!confirm('Delete this saved solution? This cannot be undone.')) return;
+  savedSolutions = savedSolutions.filter(s=>s.id!==id);
+  store('tses_saved', savedSolutions);
+  renderSavedList(); renderStats();
+  toast('Solution deleted');
+}
+window.deleteSaved = deleteSaved;
+function printSavedSolution(id){
+  const s = savedSolutions.find(x=>x.id===id);
+  if(!s) return;
+  window[s.id+'_data'] = s.data;
+  printSolution(s.id);
+}
+window.printSavedSolution = printSavedSolution;
+function downloadSavedPdf(id){
+  const s = savedSolutions.find(x=>x.id===id);
+  if(!s) return;
+  window[s.id+'_data'] = s.data;
+  window[s.id+'_question'] = s.question;
+  downloadSolutionPdf(s.id);
+}
+window.downloadSavedPdf = downloadSavedPdf;
+['savedSearch','savedWeekFilter'].forEach(id=>{
+  document.addEventListener('input', e=>{ if(e.target.id===id) renderSavedList(); });
+  document.addEventListener('change', e=>{ if(e.target.id===id) renderSavedList(); });
+});
+
+/* =========================================================================
+   13. EDIT / WEEKLY UPDATE VIEW
+   ========================================================================= */
+$('#addQuestionBtn').addEventListener('click', ()=>{
+  const w = $('#editWeekSelect').value;
+  const topic = $('#editTopic').value.trim();
+  const q = $('#editQuestion').value.trim();
+  const a = $('#editAnswer').value.trim();
+  if(!q || !a){ toast('Question and answer are required'); return; }
+  customQuestions[w] = customQuestions[w] || [];
+  customQuestions[w].push({id:uid(), topic: topic || 'General', q, a});
+  store('tses_custom_qs', customQuestions);
+  $('#editQuestion').value=''; $('#editAnswer').value=''; $('#editTopic').value='';
+  renderWeekPage(parseInt(w));
+  renderEditList();
+  renderBrowse();
+  toast('Question added to Week '+w);
+});
+function renderEditList(){
+  const wrap = $('#editList');
+  const all = [];
+  for(let w=1; w<=5; w++){
+    (customQuestions[w]||[]).forEach(q=>all.push({...q, week:w, custom:true}));
+    (SEED_QUESTIONS[w]||[]).forEach(q=>all.push({...q, week:w, custom:false}));
+  }
+  if(!all.length){ wrap.innerHTML = '<p style="color:var(--text-500);">No questions yet.</p>'; return; }
+  wrap.innerHTML = `<div class="editable-hint">Edit mode is on — deletions below are permanent for questions you've added.</div>` +
+   all.map(q=>`
+    <div class="edit-list-item">
+      <div style="min-width:0;">
+        <div style="font-weight:600;font-size:13px;">${escapeHtml(q.q)}</div>
+        <div style="font-size:11.5px;color:var(--text-500);">Week ${q.week} · ${escapeHtml(q.topic||'General')} ${q.custom? '' : '· built-in'}</div>
+      </div>
+      ${q.custom ? `<button class="btn btn-sm btn-danger" onclick="deleteCustomQuestion(${q.week}, '${q.id}')">Delete</button>` : `<span class="badge">Locked</span>`}
+    </div>
+  `).join('');
+}
+function deleteCustomQuestion(w, id){
+  if(!confirm('Delete this question permanently?')) return;
+  customQuestions[w] = (customQuestions[w]||[]).filter(q=>q.id!==id);
+  store('tses_custom_qs', customQuestions);
+  renderWeekPage(w); renderEditList(); renderBrowse();
+  toast('Question deleted');
+}
+window.deleteCustomQuestion = deleteCustomQuestion;
+renderEditList();
+
+/* =========================================================================
+   14. STATS
+   ========================================================================= */
+function renderStats(){
+  $('#statSavedCount').textContent = savedSolutions.length;
+  const totalQ = allQuestionsFlat().length;
+  if(parseInt($('#statQACount').textContent)===0) $('#statQACount').textContent = totalQ;
+}
+renderStats();
+renderSavedList();
+
+/* =========================================================================
+   15. AI TUTOR
+   ========================================================================= */
+const tutorFab = $('#tutorFab'), tutorPanel = $('#tutorPanel');
+tutorFab.addEventListener('click', ()=>{ tutorPanel.classList.add('open'); $('#tutorInput').focus(); });
+$('#closeTutor').addEventListener('click', ()=> tutorPanel.classList.remove('open'));
+
+let useContext = true;
+$('#toggleContext').addEventListener('click', function(){
+  useContext = !useContext;
+  this.classList.toggle('on', useContext);
+});
+$('#toggleAdvanced').addEventListener('click', function(){
+  this.classList.toggle('on');
+  $('#advancedPanel').classList.toggle('hidden');
+});
+
+const TUTOR_CHIPS = ["What does k12 mean?","Explain net area simply","Why does deflection matter?","Show me the bending formula"];
+$('#tutorChips').innerHTML = TUTOR_CHIPS.map(c=>`<button class="tutor-chip" onclick="tutorChipClick(this)">${c}</button>`).join('');
+function tutorChipClick(btn){ $('#tutorInput').value = btn.textContent; sendTutorMessage(); }
+window.tutorChipClick = tutorChipClick;
+
+function askTutorAboutSolution(){
+  tutorPanel.classList.add('open');
+  $('#tutorInput').value = 'Can you explain this solution in more detail?';
+  $('#tutorInput').focus();
+}
+window.askTutorAboutSolution = askTutorAboutSolution;
+
+const tutorInput = $('#tutorInput');
+tutorInput.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendTutorMessage(); }
+});
+tutorInput.addEventListener('input', ()=>{
+  tutorInput.style.height='auto'; tutorInput.style.height = Math.min(tutorInput.scrollHeight,80)+'px';
+});
+$('#tutorSend').addEventListener('click', sendTutorMessage);
+
+function addMsg(role, html, sourceType){
+  const body = $('#tutorBody');
+  const div = document.createElement('div');
+  div.className = 'msg ' + (role==='user'?'user':'ai');
+  let inner = '';
+  if(role==='ai' && sourceType){
+    inner += `<span class="badge-source ${sourceType==='course'?'course':'general'}">${sourceType==='course'?'Course-supported':'General engineering'}</span><br>`;
+  }
+  inner += html;
+  div.innerHTML = inner;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+  return div;
+}
+
+async function sendTutorMessage(){
+  const text = tutorInput.value.trim();
+  if(!text) return;
+  addMsg('user', escapeHtml(text));
+  tutorHistory.push({role:'user', content:text});
+  tutorInput.value=''; tutorInput.style.height='auto';
+
+  const typingEl = addMsg('ai', '<div class="typing-dots"><span></span><span></span><span></span></div>');
+  const sendBtn = $('#tutorSend');
+  sendBtn.disabled = true;
+  tutorAbort = new AbortController();
+
+  let sys = `You are a friendly, precise AI tutor for a university timber/structural engineering course (BET 402, AS 1720.1-based). Explain clearly, define jargon, show formulas when useful. If a question goes beyond the five-week course scope (material properties, loads/beams, tension, compression, spaced/composite columns), answer helpfully but clearly say it's general engineering knowledge, not course-verified. Never invent specific numeric strength values without flagging them as typical/published and to be verified. Depth: ${$('#tutorDepth').value}.`;
+  if(useContext && currentSolutionCtx){
+    sys += `\n\nCurrent solved question for context: "${currentSolutionCtx.question}"\nCurrent solution summary: ${JSON.stringify(currentSolutionCtx.solution).slice(0,1500)}`;
+  }
+  try{
+    const raw = await callClaude({system: sys, messages: tutorHistory.slice(-8), signal: tutorAbort.signal});
+    const sourceType = /beyond the course|general engineering|not course-verified|outside the course/i.test(raw) ? 'general' : 'course';
+    typingEl.innerHTML = `<span class="badge-source ${sourceType}">${sourceType==='course'?'Course-supported':'General engineering'}</span><br>${escapeHtml(raw)}`;
+    tutorHistory.push({role:'assistant', content: raw});
+  }catch(err){
+    if(err.name==='AbortError'){ typingEl.innerHTML = '<i>Generation stopped.</i>'; }
+    else { typingEl.innerHTML = `Sorry — I couldn't reach the tutor service (${escapeHtml(err.message)}). Please try again.`; }
+  } finally {
+    sendBtn.disabled = false;
+    tutorAbort = null;
+  }
+}
+
+/* stop generation: repurpose send button as stop while streaming (simple abort binding) */
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && tutorAbort){ tutorAbort.abort(); }
+});
+
+/* =========================================================================
+   16. INIT
+   ========================================================================= */
+setView('dashboard');
+</script>
+</body>
+</html>
